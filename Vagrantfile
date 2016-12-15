@@ -15,7 +15,7 @@ $ip_base = "192.168.80."
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.box = "ubuntu/trusty64"
-  authorize_key_for_root config, '~/.ssh/id_dsa.pub', '~/.ssh/id_rsa.pub'
+  authorize_key_for_root config, '~/.ssh/id_rsa.pub'
 
   # Hostmanager config. See https://github.com/devopsgroup-io/vagrant-hostmanager
   config.hostmanager.enabled = true
