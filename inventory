@@ -1,0 +1,15 @@
+node1    ansible_ssh_host=node1.my.dev  ansible_user=root
+node2    ansible_ssh_host=node2.my.dev  ansible_user=root
+st2      ansible_ssh_host=st2.my.dev    ansible_user=root
+
+[docker_engine]
+node1
+node2
+st2
+
+[docker_swarm_manager]
+st2
+
+[docker_swarm_worker]
+node1
+node2

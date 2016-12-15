@@ -43,3 +43,11 @@ up. Clean it up by hands.
 
 
 ### 2. Ansible
+I use Ansible to deploy the software components on the nodes.
+
+1. Create Swarm cluster:
+
+	```
+	ansible-playbook playbook-swarm.yml -i inventory
+	```
+2. Install StackStorm:

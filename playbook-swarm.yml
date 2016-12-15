@@ -1,0 +1,8 @@
+---
+
+- name: "Provision Docker Swarm Cluster"
+  hosts: all
+  vars:
+    docker_swarm_interface: "eth1"
+  roles:
+    - role: ansible-dockerswarm
