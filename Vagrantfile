@@ -26,7 +26,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   
   nodes.each do |prefix, (count, ip_start, vcpu, vmem)|
     count.times do |i|
-      hostname = (count == 1 ? prefix : prefix+"-#{i+1}")
+      hostname = (count == 1 ? prefix : prefix+"#{i+1}")
       # puts "Provisioning a node %s: %s vcpu / %s Mb" % [hostname, vcpu, vmem]
       config.vm.define "#{hostname}" do |box|
         box.vm.hostname = "#{hostname}.my.dev"
