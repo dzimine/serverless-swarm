@@ -1,0 +1,28 @@
+---
+
+# TODO: Check pre-requisites. Docker and openssl should be installed.
+
+  - include: certificate.yml
+
+  - name: Run Docker Registry in a container
+    docker_container:
+      image: "registry:2"
+      name: registry
+      ports:
+        - "5000:5000"
+      env:
+        REGISTRY_STORAGE_FILESYSTEM_ROOTDIRECTORY: /registry
+        REGISTRY_HTTP_TLS_CERTIFICATE: /certs/{{ cert_name }}.crt
+        REGISTRY_HTTP_TLS_KEY: "/certs/{{ cert_name }}.key"
+      volumes:
+        - "/vagrant/registry:/registry:rw"
+        - "{{remote_cert_path}}:/certs"
+      privileged: yes
+      state: started
+      restart: yes
+      pull: false
+      restart_policy: always
+    register: start_registry
+    # become: true
+
+

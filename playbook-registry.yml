@@ -1,0 +1,8 @@
+---
+
+- name: "Provision Local Docker Registry"
+  hosts: st2
+  vars:
+    docker_swarm_interface: "eth1"
+  roles:
+    - role: ansible-registry

@@ -13,3 +13,6 @@ st2
 [docker_swarm_worker]
 node1
 node2
+
+[docker_registry]
+st2

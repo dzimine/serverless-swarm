@@ -1,0 +1,4 @@
+---
+local_cert_path:  "{{playbook_dir}}/certs"
+remote_cert_path: "/root/docker/certs/"
+cert_name: "{{ ansible_fqdn }}"
