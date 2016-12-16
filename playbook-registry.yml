@@ -1,8 +1,8 @@
 ---
 
 - name: "Provision Local Docker Registry"
-  hosts: st2
+  hosts: all
   vars:
-    docker_swarm_interface: "eth1"
+    host_registry_path: "/vagrant/registry"
   roles:
     - role: ansible-registry

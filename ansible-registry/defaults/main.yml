@@ -1,4 +1,11 @@
 ---
+# Certificate paths and names
 local_cert_path:  "{{playbook_dir}}/certs"
 remote_cert_path: "/root/docker/certs/"
-cert_name: "{{ ansible_fqdn }}"
+cert_name: "registry"
+# Path to registry persistant storage on Registry docker host.
+host_registry_path: "/vagrant/registry"
+# Docker registry host FQDN
+registry_host: "{{ ansible_fqdn }}"
+# Docker registry port 
+registry_port: '5000'

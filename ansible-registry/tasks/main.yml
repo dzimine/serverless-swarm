@@ -3,26 +3,45 @@
 # TODO: Check pre-requisites. Docker and openssl should be installed.
 
   - include: certificate.yml
+    when: "'docker_registry' in group_names"
 
   - name: Run Docker Registry in a container
     docker_container:
       image: "registry:2"
       name: registry
       ports:
-        - "5000:5000"
+        - "{{ registry_port }}:5000"
       env:
         REGISTRY_STORAGE_FILESYSTEM_ROOTDIRECTORY: /registry
         REGISTRY_HTTP_TLS_CERTIFICATE: /certs/{{ cert_name }}.crt
         REGISTRY_HTTP_TLS_KEY: "/certs/{{ cert_name }}.key"
       volumes:
-        - "/vagrant/registry:/registry:rw"
-        - "{{remote_cert_path}}:/certs"
+        - "{{ host_registry_path }}:/registry:rw"
+        - "{{ remote_cert_path }}:/certs"
       privileged: yes
       state: started
       restart: yes
       pull: false
       restart_policy: always
     register: start_registry
+    when: "'docker_registry' in group_names"
     # become: true
+
+  - name: Declare the address of the first Registry as a fact
+    set_fact:
+      docker_registry_address: "{{ registry_host }}:{{ registry_port }}"
+    when: "inventory_hostname == groups['docker_registry'][0]"
+
+  - name: Distribute the fact containing address of the first Registry
+    set_fact:
+      docker_registry_address: "{{hostvars[groups['docker_registry'][0]]['docker_registry_address'] }}"
+    when: "inventory_hostname != groups['docker_registry'][0]"
+
+  - name: Copy certificates to the client nodes
+    copy: 
+      src: "{{local_cert_path}}/{{cert_name}}.crt"
+      dest: "/etc/docker/certs.d/{{ docker_registry_address }}/"
+    become: true
+
 
 
