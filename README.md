@@ -51,3 +51,12 @@ I use Ansible to deploy the software components on the nodes.
 	ansible-playbook playbook-swarm.yml -i inventory
 	```
 2. Install StackStorm:
+
+	```sh
+	# Install requirements for
+	ansible-galaxy install -r ansible-st2/roles/mistral/requirements.yml
+	
+	# Run ansible to install StackStorm
+	ansible-playbook playbook-st2.yml -i inventory
+	
+	```

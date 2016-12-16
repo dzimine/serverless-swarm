@@ -2,3 +2,6 @@
 	path = ansible-dockerswarm
 	url = https://github.com/dzimine/ansible-dockerswarm.git
 	branch = DZ/swarm-pipeline
+[submodule "ansible-st2"]
+	path = ansible-st2
+	url = https://github.com/dzimine/ansible-st2.git
