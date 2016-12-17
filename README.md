@@ -1,17 +1,26 @@
 # Serverless with Docker, Swarm, and StackStorm.
 
+TODO: high-level description of what is all about.
 
-## Setting up
+## Setting Up
 
-### 1. Vagrant
+### 1. Provision machines (with Vagrant)
+First we need to provision machines where Swarm will be deployed. I'll use thee boxes:
 
-I use Vagrant to create a repeatable local dev environment, representable of
-one at AWS or DigitalOcean.  Inspired by [6 practices for super smooth Ansible
+| Host          | Role            |
+|---------------|-----------------|
+| st2.dev.net   | Swarm manager, Docker Registry, StackStorm     |
+| node1.dev.net | Swarm worker    | 
+| node2.dev.net | Swarm worker    |
+
+Roles are described as code in [`inventory`]() file. Dah, this proto setup is for play, not for production.
+
+Vagrant is used to create a repeatable local dev environment, with convinience tricks inspired by [6 practices for super smooth Ansible
 experience](http://hakunin.com/six-ansible-practices). This will set 3 boxes,
 named `st2.my.dev`, `node1.my.dev`, and `node2.my.dev`, with ssh access
 configured for root. Set up steps:
 
-1. Generate  a pairs of SSH keys:  `~/.ssh/id_rsa`, `~/.ssh/id_rsa.pub`  (to
+1. Generate  a pair of SSH keys:  `~/.ssh/id_rsa`, `~/.ssh/id_rsa.pub` (to
 use different keys, update the call to `authorize_key_for_root` in
 `Vagrantfile` accordingly).
 
@@ -42,93 +51,25 @@ hostmanager/issues/159), `/etc/hosts` on the host machine may not be cleaned
 up. Clean it up by hands.
 
 
-### 2. Ansible
-I use Ansible to deploy the software components on the nodes.
+### 2. Deploy Swarm cluster
+Ok, machines are set up. Let deploy a 3-node Swarm cluster.
 
 1. Create Swarm cluster:
 
     ```
     ansible-playbook playbook-swarm.yml -i inventory
     ```
+2. Set up the [local Docker Registry]():
 
-2. Install StackStorm:
-
-    ```sh
-    # Install requirements for
-    ansible-galaxy install -r ansible-st2/roles/mistral/requirements.yml
-    
-    # Run ansible to install StackStorm
-    ansible-playbook playbook-st2.yml -i inventory
-    
-    ```
-
-### 3. Running app in Docker
-
-The apps are placed in (drum-rolls...) `./apps`. 
-By the virute of default Vagrant share, it is available inside
-all VMs at `/vagrant/apps`.
-
-Login to a VM. Any would do as docker is installed on all. 
-
-    ssh st2.my.dev
-
-Build an app:
-
-    cd /vagrant/apps/encode
-    docker run --rm -v /vagrant/share:/share dz/
-
-Run an app: 
-
-    docker run --rm -v /vagrant/share:/share \ 
-    dz/encode -i /share/li.txt -o /share/li.out --delay 3
-
-Reminders: 
-
-* `--rm` to remove container once it exits. 
-* `-v` maps `/vagrant/share` of Vagrant VM to `/share` inside the container.
-  This acts as a shared storage across Swarm VMs as `/vagrant/share` maps to the host machine. On AWS we need to figure good shared storage alternative.
-
-
-## Coming up 
-* Setting up repository
-
-```
-# Generate certificate, use st2.my.dev as CN
-openssl req -newkey rsa:4096 -nodes -sha256 -keyout certs/domain.key -x509 -days 365 -out certs/domain.crt
-
-# Run repository as a docker container, with certificate.
-
-docker run -d -p 5000:5000 --restart=always --name registry \
-  -v `pwd`/certs:/certs \
-  -v /vagrant/registry:/var/lib/registry
-  -e REGISTRY_HTTP_TLS_CERTIFICATE=/certs/registry.crt \
-  -e REGISTRY_HTTP_TLS_KEY=/certs/registry.key \
-  registry:2
-
-# Copy
-# The directory shall match the URL, including PORT.
-mkdir -p /etc/docker/certs.d/st2.my.dev:5000
-cp certs/registry.crt /etc/docker/certs.d/st2.my.dev:5000/ca.crt
-# Restart docker engine
-
-# Try it out
-docker pull hello-world
-docker tag hello-world st2.my.dev:5000/hello-world
-docker push st2.my.dev:5000/hello-world
-docker images
-docker tag dz/encode st2.my.dev:5000/encode
-docker push st2.my.dev:5000/encode
-
-curl --cacert certs/registry.crt -X GET https://st2.my.dev:5000/v2/_catalog
-curl --cacert certs/registry.crt -X GET https://st2.my.dev:5000/v2/encode/tags/list
-
-```
-
-	
-
-* Add [Swarm visualizer](https://github.com/ManoMarks/docker-swarm-visualizer). Run it on Swarm, connect at [http://st2.my.dev:8080](http://st2.my.dev:8080):
-	
 	```
+	ansible-playbook playbook-registry -vv -i inventory
+	```
+3. Add [Swarm visualizer](https://github.com/ManoMarks/docker-swarm-visualizer) for a nice eye-candy. Run this command on Swarm master.
+
+	```
+	# ATTENTION! 
+	# Run this on Swarm master, st2.my.dev
+	
 	docker service create \
 	--name=viz \
    --publish=8080:8080/tcp \
@@ -136,4 +77,65 @@ curl --cacert certs/registry.crt -X GET https://st2.my.dev:5000/v2/encode/tags/l
    --mount=type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock \
    manomarks/visualizer
    ```
-* 
+
+   Connect to Visualizer via [http://st2.my.dev:8080](http://st2.my.dev:8080) and see this one server there.
+
+
+### 3. Install StackStorm:
+
+```sh
+# Install requirements for ansible-st2 playbooks
+ansible-galaxy install -r ansible-st2/roles/mistral/requirements.yml
+    
+# Run ansible to install StackStorm
+ansible-playbook playbook-st2.yml -i inventory
+    
+```
+
+**Pat me on a back, infra is done!** We got three nodes with docker, running as Swarm, with local Registry, and StackStorm to rule them all.
+
+## Play time!
+
+### 1. Running app in plain Docker
+
+The apps are placed in (drum-rolls...) `./apps`. 
+By the virtue of default Vagrant share, it is available inside
+all VMs at `/vagrant/apps`.
+
+Login to a VM. Any node would do as docker is installed on all. 
+
+    ssh node1.my.dev
+
+1. Build an app:
+
+    cd /vagrant/apps/encode
+    docker build -t encode . 
+
+2. Push the app to local docker registry:
+    
+    ```
+    docker tag encode st2.my.dev:5000/encode
+    docker push st2.my.dev:5000/encode
+    
+    # Inspect the repository
+    curl --cacert /etc/docker/certs.d/st2.my.dev\:5000/registry.crt https://st2.my.dev:5000/v2/_catalog
+    curl --cacert /etc/docker/certs.d/st2.my.dev\:5000/registry.crt -X GET https://st2.my.dev:5000/v2/encode/tags/list
+    ```
+3. Run the app: 
+    
+    ``` 
+    docker run --rm -v /vagrant/share:/share \
+    st2.my.dev:5000/encode -i /share/li.txt -o /share/li.out --delay 1
+    ```
+	Reminders: 
+	
+	* `--rm` to remove container once it exits. 
+	* `-v` maps `/vagrant/share` of Vagrant VM to `/share` inside the container.
+	  This acts as a shared storage across Swarm VMs as `/vagrant/share` maps to the host machine. On AWS we need to figure good shared storage alternative.
+	* `-i`, `-o`, `--delay` are app parameters.
+
+
+4. Login to another node, and run the container app from there. It will download the image and run the app.
+
+### 2. Swarm is coming to town
+Coming up...
