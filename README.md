@@ -1,8 +1,10 @@
 # Serverless with Docker, Swarm, and StackStorm.
 
-TODO: high-level description of what is all about.
+This is my playgrond to prototype "serverless" with Swarm and StackStorm.
 
 ## Setting Up
+
+All you need to get a swarm cluster running **conviniently**, per [Swarm tutorial](https://docs.docker.com/engine/swarm/swarm-tutorial/).
 
 ### 1. Provision machines (with Vagrant)
 First we need to provision machines where Swarm will be deployed. I'll use thee boxes:
