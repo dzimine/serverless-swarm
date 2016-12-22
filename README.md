@@ -39,8 +39,10 @@ use different keys, update the call to `authorize_key_for_root` in
        LogLevel ERROR
     ```
 
-3. Install [vagrant-hostmanager](https://github.com/devopsgroup-io/vagrant-
-hostmanager).
+3. Install [vagrant-hostmanager](https://github.com/devopsgroup-io/vagrant-hostmanager):
+    ```
+    vagrant plugin install vagrant-hostmanager
+    ```
 
 4. Run `vagrant up`. You will need to type in the password to let Vagrant
 update `/etc/hosts/`.
@@ -59,12 +61,12 @@ Ok, machines are set up. Let deploy a 3-node Swarm cluster.
 1. Create Swarm cluster:
 
     ```
-    ansible-playbook playbook-swarm.yml -i inventory
+    ansible-playbook playbook-swarm.yml -vv -i inventory
     ```
 2. Set up the [local Docker Registry]():
 
 	```
-	ansible-playbook playbook-registry -vv -i inventory
+	ansible-playbook playbook-registry.yml -vv -i inventory
 	```
 3. Add [Swarm visualizer](https://github.com/ManoMarks/docker-swarm-visualizer) for a nice eye-candy. Run this command on Swarm master.
 
@@ -110,9 +112,10 @@ Login to a VM. Any node would do as docker is installed on all.
 
 1. Build an app:
 
+    ```
     cd /vagrant/apps/encode
     docker build -t encode . 
-
+    ```
 2. Push the app to local docker registry:
     
     ```
