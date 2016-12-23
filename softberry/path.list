@@ -1,0 +1,23 @@
+# locations of programs and data for bacterial genome annotation
+/sb/FgenesB/                     ## directory with scripts and programs
+/sb/FgenesB/bact.par             ## 300 ## 0 ## gene finding parameter file
+/sb/blast-2.2.26/bin/blastall            ## 8 ##   1 ## blast executable (for blastn)
+/sb/DATA/rrna_db/bact_LSRRNA.set ## 1 ## 300 ## bacterial RRNA database
+/sb/DATA/rrna_db/bact_5SRRNA.set ## 1 ##  50 ## bacterial 5S RRNA database
+/sb/DATA/rrna_db/arch_LSRRNA.set ## 0 ##  50 ## archea RRNA database
+/sb/DATA/rrna_db/arch_5SRRNA.set ## 0 ##  50 ## archea 5S RRNA database
+/sb/tRNAscan-SE/bin/tRNAscan-SE  ## 0 ## 0 - not use, 1 use both bact and arch, 2 - use only bact, 3 use only arch
+/sb/FgenesB/map.par              ## thresholds/parameters for protein mapping
+/sb/blast-2.2.26/bin/blastall            ## 10 ##  4 ## blast executable (for blastx)
+/sb/DATA/rbp_db.BLAST/nr_ba_rbp  ## NR   ## 0  ##  0 ## ribosomal proteins DB
+/sb/blast-2.2.26/bin/blastpgp            ## 8 ##   4 ## blast executable
+/sb/DATA/cog_db/cog.pro          ## COG  ## 1 ## COG database
+/sb/DATA/cog_db/cog_gene.list    ##              COG gene list
+/sb/DATA/cog_db/org.list         ##              COG organisms list
+0                                          ## number of other protein DBs for BLAST
+/sb/DB/KEGG/kegg.fa                         ## KEGG ## 2 ## KEGG protein database
+/sb/DB/NR/nr_ba                             ## NR   ## 2 ## nr protein DB
+1                                          ## 1 - predict promoters/terminators, 0 - not predict
+1                                          ## replace alternative start codons with M in proteins
+1                                          ## make short protein deflines (for nr-like homologs)
+1                                          ## 1 - add name of sequence to gene predictions, 0 - not add
