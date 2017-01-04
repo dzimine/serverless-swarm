@@ -1,0 +1,10 @@
+---
+name: pipeline
+ref: pipeline
+description: Serverless pipeline prototype automation
+keywords:
+  - docker
+  - automation
+version : 0.1.0
+author : Dmitri Zimin(e)
+email : dz@stackstorm.com

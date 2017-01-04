@@ -1,0 +1,6 @@
+---
+  base_url:
+    description: "Docker API URL"
+    type: "string"
+    required: true
+    default: "unix://var/run/docker.sock"
