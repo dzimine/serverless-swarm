@@ -1,4 +1,5 @@
 from unittest2 import TestCase
+from unittest2 import skip
 from st2tests.base import BaseActionTestCase
 
 import mock
@@ -56,5 +57,30 @@ class RunJobActionTestCase(BaseActionTestCase):
             image="alpine", command=None, args=['ping', '192.168.1.1'],
             mounts=["source=/foo/bar,dst=/bar,type=bind", "src=foo,dst=bar"])
 
-        mock_create.assert_called_once_with(mock.ANY, name=result[1]['job'])
+        expected = {
+            'ContainerSpec': {
+                'Args': ['ping', '192.168.1.1'],
+                'Command': None,
+                'Image': 'alpine',
+                'Mounts': [
+                    {'Source': '/foo/bar', 'Target': '/bar', 'Type': 'bind'},
+                    {'Source': 'foo', 'Target': 'bar', 'Type': 'volume'}
+                ]
+            },
+            'RestartPolicy': {'Condition': 'none'}
+        }
+        mock_create.assert_called_once_with(expected, name=result[1]['job'])
         mock_tasks.assert_called_with(filters={'service': '1111'})
+
+    @skip("Only run on real swarm")
+    def test_run_real(self):
+        image = "st2.my.dev:5000/encode"
+        command = None
+        args = ["-i/share/li.txt", "-o/share/li.out", "--delay", "10"]
+        mounts = ["source=/vagrant/share,dst=/share,type=bind", "src=share,dst=/bar"]
+
+        action = self.get_action_instance()
+        result = action.run(
+            image=image, command=command, args=args,
+            mounts=mounts)
+        print result

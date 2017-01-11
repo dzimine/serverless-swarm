@@ -1,4 +1,6 @@
 .vagrant
+*.pyc
 certs
 share
 registry
+softberry/*/

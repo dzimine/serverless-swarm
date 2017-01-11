@@ -143,4 +143,49 @@ Login to a VM. Any node would do as docker is installed on all.
 4. Login to another node, and run the container app from there. It will download the image and run the app.
 
 ### 2. Swarm is coming to town
-Coming up...
+Run the job with swarm command-line: 
+
+```
+docker service create --name job2 \
+--mount type=bind,source=/vagrant/share,destination=/share \
+--restart-condition none st2.my.dev:5000/encode \
+-i /share/li.txt -o /share/li.out --delay 20
+```
+
+Run it a few times, enjoy seeing them pile up in visualizer, just be sure to give a different job name.
+
+### 3. Now repeat with StackStorm
+Run StackStorm pipeline pack.
+
+Install `pipeline` pack. Hackish way is to symlink it in place:
+
+```
+ln -s /vagrant/pipeline/ /opt/stackstorm/packs/
+st2clt reload
+# check the action is in place and ready
+st2 action list --pack=pipeline
+```
+
+To run the pack's unit tests: 
+
+```
+# Dang I need ST2 
+git clone --depth=1 https://github.com/StackStorm/st2.git /tmp/st2
+# Run unit tests now
+ST2_REPO_PATH=/tmp/st2 /opt/stackstorm/st2/bin/st2-run-pack-tests -p /opt/stackstorm/packs/pipeline
+```
+
+Run the job via stackstorm: 
+
+```
+st2 run -a pipeline.run_job \
+image=st2.my.dev:5000/encode \
+mounts='["type=bind,source=/vagrant/share,target=/share"]' \
+args="-i","/share/li.txt","-o","/share/test.out","--delay",3
+```
+
+To clean-up jobs (we've got a bunch!):
+
+```
+docker service rm $(docker service ls | grep "job*" | awk '{print $2}'
+```

@@ -50,18 +50,22 @@ class RunJobAction(Action):
         return "job-" + hex(random.getrandbits(64)).lstrip('0x')
 
     def run(self, image, command, args, mounts):
-
         name = self.generate_name()
-
         self.logger.info("Creating job %s", name)
 
         # Create service
         try:
+            m = []
+            for mount in mounts:
+                m.append(_parse_mount_string(mount))
 
-            m = [docker.types.Mount('/share', '/vagrant/share', type='bind')]
             cs = docker.types.ContainerSpec(image, args=args, mounts=m)
             tt = docker.types.TaskTemplate(cs, restart_policy={'Condition': 'none'})
+            self.logger.debug("TaskTemplate: %s", tt)
+
             job = self.client.api.create_service(tt, name=name)
+
+            self.logger.info("Job %s created: %s", name, job)
 
             # NOTE: with `restart-condition=none`, there is only one task.
             #       In general case polling doesn't work well as swarm restart tasks,
@@ -76,6 +80,8 @@ class RunJobAction(Action):
                 status = task['Status']
                 state = status['State']
 
+                self.logger.debug("Job %s task %s: %s", job['ID'], task['ID'], state)
+
                 if state in ('failed', 'rejected'):
                     self.logger.error(status['Err'])
                     # XXX: remove the job?
@@ -85,7 +91,7 @@ class RunJobAction(Action):
                 if state == 'complete':
                     break
 
-        # TODO(dzimine): Handle "out of resources" case
+            # TODO(dzimine): Handle "out of resources" case
 
         except docker.errors.APIError as e:
             self.logger.error(e)
