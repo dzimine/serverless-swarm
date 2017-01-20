@@ -1,6 +1,6 @@
 ---
 name: "run_job"
-runner_type: "python-script"
+runner_type: "run-python"
 description: "Run a dockerized job on swarm cluster."
 enabled: true
 entry_point: "job.py"
