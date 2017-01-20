@@ -49,17 +49,20 @@ class RunJobAction(Action):
     def generate_name(self):
         return "job-" + hex(random.getrandbits(64)).lstrip('0x')
 
-    def run(self, image, command, args, mounts):
+    def run(self, image, command=None, args=None, mounts=None):
         name = self.generate_name()
         self.logger.info("Creating job %s", name)
 
         # Create service
         try:
-            m = []
-            for mount in mounts:
-                m.append(_parse_mount_string(mount))
+            if mounts:
+                m = []
+                for mount in mounts:
+                    m.append(_parse_mount_string(mount))
+                mounts = m
 
-            cs = docker.types.ContainerSpec(image, args=args, mounts=m)
+            cs = docker.types.ContainerSpec(
+                image, command=command, args=args, mounts=mounts)
             tt = docker.types.TaskTemplate(cs, restart_policy={'Condition': 'none'})
             self.logger.debug("TaskTemplate: %s", tt)
 

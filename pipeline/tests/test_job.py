@@ -72,6 +72,27 @@ class RunJobActionTestCase(BaseActionTestCase):
         mock_create.assert_called_once_with(expected, name=result[1]['job'])
         mock_tasks.assert_called_with(filters={'service': '1111'})
 
+    @mock.patch('docker.api.APIClient.create_service')
+    @mock.patch('docker.api.APIClient.tasks')
+    def test_run_with_defaults(self, mock_tasks, mock_create):
+        mock_create.return_value = {"ID": "1111"}
+        mock_tasks.return_value = [{'ID': '111', 'Status': {'State': 'complete'}}]
+
+        action = self.get_action_instance()
+        action.pool_interval = 0
+        result = action.run(image="alpine")
+
+        expected = {
+            'ContainerSpec': {
+                'Image': 'alpine',
+                'Command': None,
+                'Args': None
+            },
+            'RestartPolicy': {'Condition': 'none'}
+        }
+        mock_create.assert_called_once_with(expected, name=result[1]['job'])
+        mock_tasks.assert_called_with(filters={'service': '1111'})
+
     @skip("Only run on real swarm")
     def test_run_real(self):
         image = "st2.my.dev:5000/encode"
