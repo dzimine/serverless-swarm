@@ -13,3 +13,12 @@ parameters:
     type: string
     description: "Output file"
     required: true
+  parallels:
+    type: integer
+    description: Number of parallel executions for "map" task
+    default: 2
+  delay:
+    type: integer
+    description: Delay to simulate long running process
+    default: 1
+    required: false

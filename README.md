@@ -192,8 +192,11 @@ docker service rm $(docker service ls | grep "job*" | awk '{print $2}'
 
 ### 4. Stitch with Workflow
 To run the workflow that executes multiple actions:
+
 ```
-st2  run -a pipeline.pipe input_file=/share/li.txt output_file=/share/li.out
+st2 run -a pipeline.pipe \
+input_file=/share/li.txt output_file=/share/li.out \
+parallels=4 delay=10
 ```
 Use StackStorm UI at [https://st2.my.dev](https://st2.my.dev) to inspect workflow execution.
 
