@@ -1,0 +1,35 @@
+
+version: '2.0'
+
+pipeline.pipe:
+    description: "See ../pipe.meta.yaml"
+    vars:
+        tempfile: /share/tmp.out
+    input:
+        - input_file
+        - output_file
+    output:
+        context: <% $ %>
+    tasks:
+        encode:
+            action: pipeline.run_job
+            input:
+                image: "st2.my.dev:5000/encode"
+                args:
+                    - "-i"
+                    - "<% $.input_file %>"
+                    - "-o"
+                    - "<% $.tempfile %>"
+                    - "--delay"
+                    - "5"
+                mounts:
+                    - "type=bind,source=/vagrant/share,target=/share"
+            on-success: decode
+
+        decode:
+            action: pipeline.run_job
+            input:
+                image: "st2.my.dev:5000/encode"
+                args: ["-i", "<% $.tempfile %>", "-o", "<% $.output_file %>", "--delay", "3"]
+                mounts:
+                    - "type=bind,source=/vagrant/share,target=/share"

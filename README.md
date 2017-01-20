@@ -189,3 +189,12 @@ To clean-up jobs (we've got a bunch!):
 ```
 docker service rm $(docker service ls | grep "job*" | awk '{print $2}'
 ```
+
+### 4. Stitch with Workflow
+To run the workflow that executes multiple actions:
+```
+st2  run -a pipeline.pipe input_file=/share/li.txt output_file=/share/li.out
+```
+Use StackStorm UI at [https://st2.my.dev](https://st2.my.dev) to inspect workflow execution.
+
+TODO: Continue expanding the workflow to make more representative.

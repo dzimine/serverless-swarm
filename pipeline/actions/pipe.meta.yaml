@@ -1,0 +1,15 @@
+---
+name: pipe
+pack: pipeline
+description: "Run a chanin of dockerized jobs"
+runner_type: mistral-v2
+entry_point: workflows/pipe.yaml
+parameters:
+  input_file:
+    type: string
+    description: "Input file"
+    required: true
+  output_file:
+    type: string
+    description: "Output file"
+    required: true
