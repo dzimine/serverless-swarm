@@ -63,7 +63,7 @@ Ok, machines are set up. Let deploy a 3-node Swarm cluster.
     ```
     ansible-playbook playbook-swarm.yml -vv -i inventory
     ```
-2. Set up the [local Docker Registry]():
+2. Set up the [local Docker Registry](https://docs.docker.com/registry/deploying/) to host private docker images:
 
 	```
 	ansible-playbook playbook-registry.yml -vv -i inventory
