@@ -22,10 +22,10 @@ To build the containers:
     ```
     # get on build node
     ssh node1.my.dev
-    
+
     # Build docker containers
     /vagrant/softberry/docker-build.sh
-    
+
     # Push the conatiners to the local registry
     docker images | grep st2.my.dev | awk '{ system("docker push " $1) }'
 
