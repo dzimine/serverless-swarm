@@ -7,5 +7,8 @@ ADD blast_scripts /sb/blast_scripts
 
 ADD path.list /sb
 ADD test.seq  /sb
+ADD extra /sb/extra
+
+WORKDIR /sb
 
 CMD ["/bin/bash"]
