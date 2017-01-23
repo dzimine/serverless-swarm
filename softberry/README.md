@@ -47,3 +47,32 @@ To build the containers:
 5. Pick up results in `share`
 
 
+### More
+Prepare the blast data:
+```
+docker run -it -v /vagrant/DATA:/sb/DATA -v /vagrant/share:/share st2.my.dev:5000/sb_base
+
+/sb/blast_scripts/fgenesb_get_proteins.pl /share/test.res > /share/prot2blast.0 
+
+/sb/extra/seqsplit.py /share/prot2blast.0 /share/out 2
+```
+
+Run BLAST (manually, split by two, for manual example):
+
+```
+# 
+docker run -it --rm -v /vagrant/DATA:/sb/DATA -v /vagrant/share:/share st2.my.dev:5000/blast_fb /share/out.1 /sb/DATA/cog_db/cog.pro /share/out.1.1 /sb/blast-2.2.26/bin/blastpgp 1e-10  4
+
+docker run -it --rm -v /vagrant/DATA:/sb/DATA -v /vagrant/share:/share st2.my.dev:5000/blast_fb /share/out.2 /sb/DATA/cog_db/cog.pro /share/out.1.2 /sb/blast-2.2.26/bin/blastpgp 1e-10  4
+
+Locally on the host, concat files:
+```
+
+cat  /vagrant/share/out.1.* > /vagrant/share/fin_prot
+```
+
+Build final result
+```
+docker run -it --rm -v /vagrant/DATA:/sb/DATA -v /vagrant/share:/share st2.my.dev:5000/fgenesb_out /share/test.res /share/fin_prot /share/final_result
+```
+
