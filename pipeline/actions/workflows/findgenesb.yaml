@@ -1,0 +1,89 @@
+
+version: '2.0'
+
+pipeline.findgenesb:
+  description: "See ../findgenesb.yaml"
+  vars:
+    fgenesb_res_file: /share/fgenesb.res
+    tempfile_prefix: out
+    mounts:
+      - "type=bind,source=<% $.share_on_host %>,target=<% $.share_in_docker %>"
+      - "type=bind,source=/vagrant/DATA,target=/sb/DATA"
+  input:
+    - input_file
+    - min_len
+    - database_path
+    - result_file
+    - share_on_host
+    - share_in_docker
+    - parallels
+    - delay
+
+  task-defaults:
+    on-error:
+        - fail
+  output:
+    context: <% $ %>
+  tasks:
+    find_genomes_and_bacterias:
+      action: pipeline.run_job
+      input:
+        image: st2.my.dev:5000/fgenesb
+        args:
+            - "<% $.input_file %>"
+            - "<% $.fgenesb_res_file %>"
+            - <% str($.min_len) %>
+        mounts: <% $.mounts %>
+      on-success: prepare_to_blast
+
+    prepare_to_blast:
+      action: pipeline.run_job
+      input:
+        image: st2.my.dev:5000/sb_base
+        args:
+          - "/bin/bash"
+          - "-c"
+          -  '/sb/blast_scripts/fgenesb_get_proteins.pl <% $.fgenesb_res_file %> > <% $.share_in_docker %>/prot2blast.0 ; /sb/extra/seqsplit.py <% $.share_in_docker %>/prot2blast.0 <% $.share_in_docker %>/<% $.tempfile_prefix %> <% $.parallels %> ; ls <% $.share_in_docker %>/<% $.tempfile_prefix %>*'
+
+          # - > TODO:
+          #     '/sb/blast_scripts/fgenesb_get_proteins.pl
+          #     <% $.fgenesb_res_file %> /share/prot2blast.0 ;
+          #     /sb/extra/seqsplit.py /share/prot2blast.0 /share/<% $.tempfile_prefix %>
+          #     <% $.parallels %> ;
+          #     ls /share/<% $.tempfile_prefix %>*'
+        mounts: <% $.mounts %>
+      on-success: blast
+
+    blast:
+      action: std.noop
+      with-items: i in <% list(range(1, 1 + $.parallels)) %>
+      # concurrency: 4
+      action: pipeline.run_job
+      input:
+        image: st2.my.dev:5000/blast_fb
+        args:
+          - "<% $.share_in_docker %>/<% $.tempfile_prefix %>.<% $.i %>"
+          - "/sb/DATA/<% $.database_path %>"
+          - "<% $.share_in_docker %>/<% $.tempfile_prefix %>.blast.<% $.i %>"
+          - "/sb/blast-2.2.26/bin/blastpgp"
+          - "1e-10"
+          - "2"
+        mounts: <% $.mounts %>
+      on-success: combine_blast_results
+
+    combine_blast_results:
+      action: core.local_sudo
+      input:
+        cmd: cat <% $.tempfile_prefix %>.blast.* > <% $.tempfile_prefix %>.final
+        cwd: <% $.share_on_host %>
+      on-success: build_final_result
+
+    build_final_result:
+      action: pipeline.run_job
+      input:
+        image: st2.my.dev:5000/fgenesb_out
+        args:
+          - <% $.fgenesb_res_file %>
+          - <% $.share_in_docker %>/<% $.tempfile_prefix %>.final
+          - <% $.result_file %>
+        mounts: <% $.mounts %>
