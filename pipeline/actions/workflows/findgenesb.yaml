@@ -43,14 +43,13 @@ pipeline.findgenesb:
         args:
           - "/bin/bash"
           - "-c"
-          -  '/sb/blast_scripts/fgenesb_get_proteins.pl <% $.fgenesb_res_file %> > <% $.share_in_docker %>/prot2blast.0 ; /sb/extra/seqsplit.py <% $.share_in_docker %>/prot2blast.0 <% $.share_in_docker %>/<% $.tempfile_prefix %> <% $.parallels %> ; ls <% $.share_in_docker %>/<% $.tempfile_prefix %>*'
-
-          # - > TODO:
-          #     '/sb/blast_scripts/fgenesb_get_proteins.pl
-          #     <% $.fgenesb_res_file %> /share/prot2blast.0 ;
-          #     /sb/extra/seqsplit.py /share/prot2blast.0 /share/<% $.tempfile_prefix %>
-          #     <% $.parallels %> ;
-          #     ls /share/<% $.tempfile_prefix %>*'
+          - >
+              /sb/blast_scripts/fgenesb_get_proteins.pl
+              <% $.fgenesb_res_file %> > <% $.share_in_docker %>/prot2blast.0 ;
+              /sb/extra/seqsplit.py
+              <% $.share_in_docker %>/prot2blast.0
+              <% $.share_in_docker %>/<% $.tempfile_prefix %> <% $.parallels %> ;
+              ls <% $.share_in_docker %>/<% $.tempfile_prefix %>*
         mounts: <% $.mounts %>
       on-success: blast
 
