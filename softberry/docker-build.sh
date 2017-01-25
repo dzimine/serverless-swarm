@@ -8,7 +8,7 @@ REGISTRY=st2.my.dev:5000
 
 # Order matters, so don't be too smart :)
 #    IMAGES=$(ls Dockerfile.* | awk -F . '{ print $NF }')
-IMAGES=( blast sb_base fgenesb blast_prep blast_fb fgenesb_out )
+IMAGES=( blast sb_base fgenesb blast_fb fgenesb_out )
 
 echo ${IMAGES[@]}
 
