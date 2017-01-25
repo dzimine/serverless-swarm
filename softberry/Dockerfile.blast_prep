@@ -1,9 +1,0 @@
-FROM sb/sb_base
-
-WORKDIR /sb
-
-# TODO(XXX): create an entry-point with 2 things:
-# FGENESB/blast_scripts/fgenesb_get_proteins.pl test.res > prot2blast.0
-# /sb/blast_scripts/fasta-splitter.pl --n-parts 3 prot2blast.0 --out-dir /share
-
-ENTRYPOINT ["/sb/extra/seqsplit.py"]

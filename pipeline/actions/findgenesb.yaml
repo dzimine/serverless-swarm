@@ -1,0 +1,40 @@
+---
+name: findgenesb
+pack: pipeline
+description: "Computes findgenesb pipeline: "
+runner_type: mistral-v2
+entry_point: workflows/findgenesb.yaml
+parameters:
+  input_file:
+    type: string
+    description: DNK sequence input file
+    required: true
+  min_len:
+    type: integer
+    description: Minimal sequence lenght.
+    required: true
+  database_path:
+    type: string
+    description: "BLAST database path, relative to DATA directory. Example: cog_db/cog.pro"
+    default: cog_db/cog.pro
+  result_file:
+    type: string
+    description: "Final result file"
+    required: true
+  share_on_host:
+    type: string
+    description: Path to shared storage on swarm node
+    default: /vagrant/share
+  share_in_docker:
+    type: string
+    description: Path to shared storage in docker container
+    default: /share
+  parallels:
+    type: integer
+    description: Number of parallel executions for "map" task
+    default: 2
+  delay:
+    type: integer
+    description: Delay to simulate long running process
+    default: 1
+    required: false
