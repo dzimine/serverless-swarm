@@ -99,11 +99,7 @@ Ok, machines are set up. Let deploy a 3-node Swarm cluster.
 ### 3. Install StackStorm:
 
 ```sh
-# Install requirements for ansible-st2 playbooks
-ansible-galaxy install -r ansible-st2/roles/mistral/requirements.yml
-
-# Run ansible to install StackStorm
-ansible-playbook playbook-st2.yml -i inventory
+ansible-playbook playbook-st2.yml -vv -i inventory
 
 ```
 
@@ -215,7 +211,7 @@ Use StackStorm UI at [https://st2.my.dev](https://st2.my.dev) to inspect workflo
 TODO: Continue expanding the workflow to make more representative.
 
 ## Misc
-* To run a second setup on the same box:
+* To run a parallel setup on the same dev box:
     * Pick a different domain and IP range, e.g. `*.dev.net`, `192.168.88.*`):
     * Clone another copy of swarm-pipeline
     * Add a new section to the `~/.ssh/config`:
@@ -226,6 +222,15 @@ TODO: Continue expanding the workflow to make more representative.
         UserKnownHostsFile=/dev/null
         User root
         LogLevel ERROR
+        ```
+    * Update domain in host names in the [`inventory`](./inventory) file:
+
+        ```
+        # inventory
+        node1    ansible_ssh_host=node1.dev.net  ansible_user=root
+        node2    ansible_ssh_host=node2.dev.net  ansible_user=root
+        st2      ansible_ssh_host=st2.dev.net    ansible_user=root
+        ...
         ```
     * Run vagrant passing the domain and IP range as enviromnemt variable:
     ```
