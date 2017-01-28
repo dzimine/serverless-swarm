@@ -8,7 +8,7 @@ This repo uses submodules, remember to use `recursive` when cloning:
 git clone --recursive https://github.com/dzimine/swarm-pipeline.git
 cd swarm-pipeline
 ```
-If you have have already cloned the repo without `--recursive`, just do: 
+If you have have already cloned the repo without `--recursive`, just do:
 ```
 cd swarm-pipeline
 git submodule update --init --recursive
@@ -215,7 +215,8 @@ Use StackStorm UI at [https://st2.my.dev](https://st2.my.dev) to inspect workflo
 TODO: Continue expanding the workflow to make more representative.
 
 ## Misc
-* To run a second setup on the same box (`*.dev.net`, `192.168.88.*`):
+* To run a second setup on the same box:
+    * Pick a different domain and IP range, e.g. `*.dev.net`, `192.168.88.*`):
     * Clone another copy of swarm-pipeline
     * Add a new section to the `~/.ssh/config`:
 
@@ -226,12 +227,7 @@ TODO: Continue expanding the workflow to make more representative.
         User root
         LogLevel ERROR
         ```
-    * Modify Vagrantfile:
-
-        ```
-        ...
-        $ip_base = "192.168.88."
-        $domain = "dev.net"
-        ...
-        ```
-    * Run `vagrant up`, continue with instructions.
+    * Run vagrant passing the domain and IP range as enviromnemt variable:
+    ```
+    IP_BASE=192.168.88 DOMAIN=dev.net vagrant up
+    ```
