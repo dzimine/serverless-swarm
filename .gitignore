@@ -1,7 +1,6 @@
 .vagrant
 *.pyc
 certs
-share
 registry
 softberry/*/
 !softberry/extra
