@@ -169,7 +169,8 @@ Install `pipeline` pack. Hackish way is to symlink it in place:
 
 ```
 ln -s /vagrant/pipeline/ /opt/stackstorm/packs/
-st2clt reload
+st2 run packs.setup_virtualenv packs=pipeline
+st2ctl reload
 # check the action is in place and ready
 st2 action list --pack=pipeline
 ```
