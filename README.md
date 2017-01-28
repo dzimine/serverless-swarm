@@ -2,6 +2,17 @@
 
 This is my playgrond to prototype "serverless" with Swarm and StackStorm.
 
+## Clone the repo
+This repo uses submodules, remember to use `recursive` when cloning:
+```
+git clone --recursive https://github.com/dzimine/swarm-pipeline.git
+cd swarm-pipeline
+```
+If you have have already cloned the repo without `--recursive`, just do: 
+```
+cd swarm-pipeline
+git submodule update --init --recursive
+```
 ## Setting Up
 
 All you need to get a swarm cluster running **conviniently**, per [Swarm tutorial](https://docs.docker.com/engine/swarm/swarm-tutorial/).
@@ -12,7 +23,7 @@ First we need to provision machines where Swarm will be deployed. I'll use thee 
 | Host          | Role            |
 |---------------|-----------------|
 | st2.my.dev    | Swarm manager, Docker Registry, StackStorm     |
-| node1.my.dev  | Swarm worker    | 
+| node1.my.dev  | Swarm worker    |
 | node2.my.dev  | Swarm worker    |
 
 Roles are described as code in [`inventory`]() file. Dah, this proto setup is for play, not for production.
@@ -71,9 +82,9 @@ Ok, machines are set up. Let deploy a 3-node Swarm cluster.
 3. Add [Swarm visualizer](https://github.com/ManoMarks/docker-swarm-visualizer) for a nice eye-candy. Run this command on Swarm master.
 
 	```
-	# ATTENTION! 
+	# ATTENTION!
 	# Run this on Swarm master, st2.my.dev
-	
+
 	docker service create \
 	--name=viz \
    --publish=8080:8080/tcp \
@@ -90,10 +101,10 @@ Ok, machines are set up. Let deploy a 3-node Swarm cluster.
 ```sh
 # Install requirements for ansible-st2 playbooks
 ansible-galaxy install -r ansible-st2/roles/mistral/requirements.yml
-    
+
 # Run ansible to install StackStorm
 ansible-playbook playbook-st2.yml -i inventory
-    
+
 ```
 
 **Pat me on a back, infra is done!** We got three nodes with docker, running as Swarm, with local Registry, and StackStorm to rule them all.
@@ -102,11 +113,11 @@ ansible-playbook playbook-st2.yml -i inventory
 
 ### 1. Running app in plain Docker
 
-The apps are placed in (drum-rolls...) `./apps`. 
+The apps are placed in (drum-rolls...) `./apps`.
 By the virtue of default Vagrant share, it is available inside
 all VMs at `/vagrant/apps`.
 
-Login to a VM. Any node would do as docker is installed on all. 
+Login to a VM. Any node would do as docker is installed on all.
 
     ssh node1.my.dev
 
@@ -114,28 +125,28 @@ Login to a VM. Any node would do as docker is installed on all.
 
     ```
     cd /vagrant/apps/encode
-    docker build -t encode . 
+    docker build -t encode .
     ```
 2. Push the app to local docker registry:
-    
+
     ```
     docker tag encode st2.my.dev:5000/encode
     docker push st2.my.dev:5000/encode
-    
+
     # Inspect the repository
     curl --cacert /etc/docker/certs.d/st2.my.dev\:5000/registry.crt https://st2.my.dev:5000/v2/_catalog
     curl --cacert /etc/docker/certs.d/st2.my.dev\:5000/registry.crt -X GET https://st2.my.dev:5000/v2/encode/tags/list
     ```
 
-4. Run the app: 
-    
-    ``` 
+4. Run the app:
+
+    ```
     docker run --rm -v /vagrant/share:/share \
     st2.my.dev:5000/encode -i /share/li.txt -o /share/li.out --delay 1
     ```
-	Reminders: 
-	
-	* `--rm` to remove container once it exits. 
+	Reminders:
+
+	* `--rm` to remove container once it exits.
 	* `-v` maps `/vagrant/share` of Vagrant VM to `/share` inside the container.
 	  This acts as a shared storage across Swarm VMs as `/vagrant/share` maps to the host machine. On AWS we need to figure good shared storage alternative.
 	* `-i`, `-o`, `--delay` are app parameters.
@@ -144,7 +155,7 @@ Login to a VM. Any node would do as docker is installed on all.
 4. Login to another node, and run the container app from there. It will download the image and run the app.
 
 ### 2. Swarm is coming to town
-Run the job with swarm command-line: 
+Run the job with swarm command-line:
 
 ```
 docker service create --name job2 \
@@ -167,16 +178,16 @@ st2clt reload
 st2 action list --pack=pipeline
 ```
 
-To run the pack's unit tests: 
+To run the pack's unit tests:
 
 ```
-# Dang I need ST2 
+# Dang I need ST2
 git clone --depth=1 https://github.com/StackStorm/st2.git /tmp/st2
 # Run unit tests now
 ST2_REPO_PATH=/tmp/st2 /opt/stackstorm/st2/bin/st2-run-pack-tests -p /opt/stackstorm/packs/pipeline
 ```
 
-Run the job via stackstorm: 
+Run the job via stackstorm:
 
 ```
 st2 run -a pipeline.run_job \
@@ -207,7 +218,7 @@ TODO: Continue expanding the workflow to make more representative.
 * To run a second setup on the same box (`*.dev.net`, `192.168.88.*`):
     * Clone another copy of swarm-pipeline
     * Add a new section to the `~/.ssh/config`:
-    
+
         ```
         Host 192.168.88.* *.dev.net
         StrictHostKeyChecking no
@@ -216,7 +227,7 @@ TODO: Continue expanding the workflow to make more representative.
         LogLevel ERROR
         ```
     * Modify Vagrantfile:
-    
+
         ```
         ...
         $ip_base = "192.168.88."
