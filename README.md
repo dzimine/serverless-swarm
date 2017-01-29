@@ -26,7 +26,7 @@ First we need to provision machines where Swarm will be deployed. I'll use thee 
 | node1.my.dev  | Swarm worker    |
 | node2.my.dev  | Swarm worker    |
 
-Roles are described as code in [`inventory`]() file. Dah, this proto setup is for play, not for production.
+Roles are described as code in [`inventory.my.dev`]() file. Dah, this proto setup is for play, not for production.
 
 Vagrant is used to create a repeatable local dev environment, with convinience tricks inspired by [6 practices for super smooth Ansible
 experience](http://hakunin.com/six-ansible-practices). This will set 3 boxes,
@@ -72,12 +72,12 @@ Ok, machines are set up. Let deploy a 3-node Swarm cluster.
 1. Create Swarm cluster:
 
     ```
-    ansible-playbook playbook-swarm.yml -vv -i inventory
+    ansible-playbook playbook-swarm.yml -vv -i inventory.my.dev
     ```
 2. Set up the [local Docker Registry](https://docs.docker.com/registry/deploying/) to host private docker images:
 
 	```
-	ansible-playbook playbook-registry.yml -vv -i inventory
+	ansible-playbook playbook-registry.yml -vv -i inventory.my.dev
 	```
 3. Add [Swarm visualizer](https://github.com/ManoMarks/docker-swarm-visualizer) for a nice eye-candy. Run this command on Swarm master.
 
@@ -99,7 +99,7 @@ Ok, machines are set up. Let deploy a 3-node Swarm cluster.
 ### 3. Install StackStorm:
 
 ```sh
-ansible-playbook playbook-st2.yml -vv -i inventory
+ansible-playbook playbook-st2.yml -vv -i inventory.my.dev
 
 ```
 
@@ -224,7 +224,7 @@ TODO: Continue expanding the workflow to make more representative.
         User root
         LogLevel ERROR
         ```
-    * Update domain in host names in the [`inventory`](./inventory) file:
+    * Update domain in host names in the [`inventory.dev.net`](./inventory.dev.net) file:
 
         ```
         # inventory
@@ -237,3 +237,6 @@ TODO: Continue expanding the workflow to make more representative.
     ```
     IP_BASE=192.168.88 DOMAIN=dev.net vagrant up
     ```
+    * Proceed with the rest using `inventory.dev.net` instead.
+    * Or, `just_freaking_do_it`. It will run Vagrant and all the
+      Ansible playbooks.
