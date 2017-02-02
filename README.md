@@ -11,9 +11,9 @@ First we need to provision machines where Swarm will be deployed. I'll use thee 
 
 | Host          | Role            |
 |---------------|-----------------|
-| st2.dev.net   | Swarm manager, Docker Registry, StackStorm     |
-| node1.dev.net | Swarm worker    | 
-| node2.dev.net | Swarm worker    |
+| st2.my.dev    | Swarm manager, Docker Registry, StackStorm     |
+| node1.my.dev  | Swarm worker    | 
+| node2.my.dev  | Swarm worker    |
 
 Roles are described as code in [`inventory`]() file. Dah, this proto setup is for play, not for production.
 
@@ -126,7 +126,8 @@ Login to a VM. Any node would do as docker is installed on all.
     curl --cacert /etc/docker/certs.d/st2.my.dev\:5000/registry.crt https://st2.my.dev:5000/v2/_catalog
     curl --cacert /etc/docker/certs.d/st2.my.dev\:5000/registry.crt -X GET https://st2.my.dev:5000/v2/encode/tags/list
     ```
-3. Run the app: 
+
+4. Run the app: 
     
     ``` 
     docker run --rm -v /vagrant/share:/share \
@@ -201,3 +202,25 @@ parallels=4 delay=10
 Use StackStorm UI at [https://st2.my.dev](https://st2.my.dev) to inspect workflow execution.
 
 TODO: Continue expanding the workflow to make more representative.
+
+## Misc
+* To run a second setup on the same box (`*.dev.net`, `192.168.88.*`):
+    * Clone another copy of swarm-pipeline
+    * Add a new section to the `~/.ssh/config`:
+    
+        ```
+        Host 192.168.88.* *.dev.net
+        StrictHostKeyChecking no
+        UserKnownHostsFile=/dev/null
+        User root
+        LogLevel ERROR
+        ```
+    * Modify Vagrantfile:
+    
+        ```
+        ...
+        $ip_base = "192.168.88."
+        $domain = "dev.net"
+        ...
+        ```
+    * Run `vagrant up`, continue with instructions.
