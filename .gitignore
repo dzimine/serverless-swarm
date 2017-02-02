@@ -1,9 +1,7 @@
 .vagrant
 *.pyc
+*.log
 certs
-share
 registry
-softberry/*/
-!softberry/extra
 DATA
 */virtualenv
