@@ -54,7 +54,6 @@ pipeline.findgenesb:
       on-success: blast
 
     blast:
-      action: std.noop
       with-items: i in <% list(range(1, 1 + $.parallels)) %>
       # concurrency: 4
       action: pipeline.run_job
