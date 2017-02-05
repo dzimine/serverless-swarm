@@ -30,7 +30,7 @@ def readline_chunk(filename, chunk, chunks):
 
 if __name__ == '__main__':
     if len(sys.argv) < 3:
-        print "Splits file to N near-equal chunks, respecting EOL."
+        print "\nSPLIT: Splits file to N near-equal chunks, respecting EOL."
         print "Usage %s FILE CHUNKS OUTPUT_FILE_PREFIX" % sys.argv[0]
         exit(1)
 

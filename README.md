@@ -1,6 +1,12 @@
 # Serverless with Docker, Swarm, and StackStorm.
 
 This is my playgrond to prototype "serverless" with Swarm and StackStorm.
+It contains two applications:
+
+* map-reduce wordcount sample - included to try things out end-to-end
+* genomic pipeline computation - for production use;
+  it requires some extra proprietary biotech bits, we are keeping them for ourselves,
+  but we show everything cloud-releated here.
 
 ## Clone the repo
 This repo uses submodules, remember to use `recursive` when cloning:
@@ -15,7 +21,8 @@ git submodule update --init --recursive
 ```
 ## Setting Up
 
-All you need to get a swarm cluster running **conviniently**, per [Swarm tutorial](https://docs.docker.com/engine/swarm/swarm-tutorial/).
+All you need to get a swarm cluster running **conviniently**, per [Swarm
+tutorial](https://docs.docker.com/engine/swarm/swarm-tutorial/).
 
 ### 1. Provision machines (with Vagrant)
 First we need to provision machines where Swarm will be deployed. I'll use thee boxes:
@@ -26,9 +33,11 @@ First we need to provision machines where Swarm will be deployed. I'll use thee 
 | node1.my.dev  | Swarm worker    |
 | node2.my.dev  | Swarm worker    |
 
-Roles are described as code in [`inventory.my.dev`]() file. Dah, this proto setup is for play, not for production.
+Roles are described as code in [`inventory.my.dev`]() file. Dah, this proto
+setup is for play, not for production.
 
-Vagrant is used to create a repeatable local dev environment, with convinience tricks inspired by [6 practices for super smooth Ansible
+Vagrant is used to create a repeatable local dev environment, with convinience
+tricks inspired by [6 practices for super smooth Ansible
 experience](http://hakunin.com/six-ansible-practices). This will set 3 boxes,
 named `st2.my.dev`, `node1.my.dev`, and `node2.my.dev`, with ssh access
 configured for root. Set up steps:
@@ -74,12 +83,14 @@ Ok, machines are set up. Let deploy a 3-node Swarm cluster.
     ```
     ansible-playbook playbook-swarm.yml -vv -i inventory.my.dev
     ```
-2. Set up the [local Docker Registry](https://docs.docker.com/registry/deploying/) to host private docker images:
+2. Set up the [local Docker Registry](https://docs.docker.com/registry/deploying/)
+    to host private docker images:
 
     ```
     ansible-playbook playbook-registry.yml -vv -i inventory.my.dev
     ```
-3. Add [Swarm visualizer](https://github.com/ManoMarks/docker-swarm-visualizer) for a nice eye-candy. Run this command on Swarm master.
+3. Add [Swarm visualizer](https://github.com/ManoMarks/docker-swarm-visualizer)
+    for a nice eye-candy. Run this command on Swarm master.
 
     ```
     # ATTENTION!
@@ -109,7 +120,8 @@ ansible-playbook playbook-st2.yml -vv -i inventory.my.dev
 
 ```
 
-**Pat me on a back, infra is done!** We got three nodes with docker, running as Swarm, with local Registry, and StackStorm to rule them all.
+**Pat me on a back, infra is done!** We got three nodes with docker, running as Swarm,
+with local Registry, and StackStorm to rule them all.
 
 ## Play time!
 
@@ -150,7 +162,8 @@ Login to a VM. Any node would do as docker is installed on all.
 
     * `--rm` to remove container once it exits.
     * `-v` maps `/vagrant/share` of Vagrant VM to `/share` inside the container.
-      This acts as a shared storage across Swarm VMs as `/vagrant/share` maps to the host machine. On AWS we need to figure good shared storage alternative.
+      This acts as a shared storage across Swarm VMs as `/vagrant/share` maps to the host machine.
+      On AWS we need to figure good shared storage alternative.
     * `-i`, `-o`, `--delay` are app parameters.
 
 
@@ -216,6 +229,34 @@ parallels=4 delay=10
 Use StackStorm UI at [https://st2.my.dev](https://st2.my.dev) to inspect workflow execution.
 
 TODO: Continue expanding the workflow to make more representative.
+
+### 5. Map-Reduce example
+
+Here we run wordcount map-reduce sample on Swarm cluster. The `split`, `map`, and `reduce` are
+containerized functions, `run_job` action runs them on Swarm cluster,
+StackStorm workflow is orchestrating the end-to-end process.
+
+
+Create containerized functions for map-reduce and push them to the Registry:
+
+```
+cd apps/wordcount
+./docker-build.sh
+
+```
+
+Run the workflow:
+
+```
+st2 run -a pipeline.wordcount \
+input_file=/share/loremipsum.txt result_file=/share/loremipsum.res \
+parallels=8 delay=10
+```
+
+Enjoy the show via [Vizualizer at http://st2.my.dev:8080](http://st2.my.dev:8080)
+and [StackStorm UI at https://st2.my.dev](https://st2.my.dev)
+
+For details, see [apps/wordcount/README.md](apps/wordcount/README.md) and inspect the code there.
 
 ## Misc
 * To run a parallel setup on the same dev box:

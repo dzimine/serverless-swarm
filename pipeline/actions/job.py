@@ -46,12 +46,13 @@ class RunJobAction(Action):
         self.client = docker.DockerClient(base_url='unix://var/run/docker.sock')
         self.pool_interval = 1
 
-    def run(self, image, command=None, args=None, mounts=None, nameix=None):
-        name = "{}-{}".format(nameix, hex(random.getrandbits(64)).lstrip('0x'))
+    def run(self, image, command=None, args=None, mounts=None, name=None):
+        name = "{}-{}".format(name, hex(random.getrandbits(64)).lstrip('0x'))
         self.logger.info("Creating job %s", name)
 
         # Create service
         try:
+            sargs = [str(x) for x in args]
             if mounts:
                 m = []
                 for mount in mounts:
@@ -59,7 +60,7 @@ class RunJobAction(Action):
                 mounts = m
 
             cs = docker.types.ContainerSpec(
-                image, command=command, args=args, mounts=mounts)
+                image, command=command, args=sargs, mounts=mounts)
             tt = docker.types.TaskTemplate(cs, restart_policy={'Condition': 'none'})
             self.logger.debug("TaskTemplate: %s", tt)
 

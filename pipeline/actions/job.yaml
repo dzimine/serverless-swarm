@@ -21,7 +21,7 @@ parameters:
         type: "array"
         description: "List of mounts, as strings following docker service --mount syntax"
         required: false
-    nameix:
+    name:
         type: "string"
         description: "Job name prefix (default is `job`)"
         required: false

@@ -1,0 +1,33 @@
+---
+name: wordcount
+pack: pipeline
+description: "Map-reduce workflow for dockerized toy wordcount app"
+runner_type: mistral-v2
+entry_point: workflows/wordcount.yaml
+parameters:
+  input_file:
+    type: string
+    # XXX: may be name only, relevant to the shared dir?
+    description: Text file to count the words.
+    required: true
+  result_file:
+    type: string
+    description: "Result file with tuples (word, count)"
+    required: true
+  share_on_host:
+    type: string
+    description: Path to shared storage on swarm node
+    default: /vagrant/share
+  share_in_docker:
+    type: string
+    description: Path to shared storage in docker container
+    default: /share
+  parallels:
+    type: integer
+    description: Number of parallel executions for "map" task
+    default: 2
+  delay:
+    type: integer
+    description: Delay to simulate long running process
+    default: 0
+    required: false
