@@ -31,9 +31,11 @@ def words_reduce_stream(stream):
     """
     result = {}
     for line in stream:
-        if len(line.strip()):
-            print line
+        try:
             (word, count) = line.split()
             count = int(count)
             result.update({word: result.get(word, 0) + count})
+        except ValueError:
+            # Skip empty or bad line
+            pass
     return sorted(result.items(), key=itemgetter(1), reverse=True)
