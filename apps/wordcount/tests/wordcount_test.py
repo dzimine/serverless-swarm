@@ -25,7 +25,7 @@ class WordCountTest(unittest.TestCase):
         self.assertItemsEqual(result, expected)
 
     def test_words_reduce_stream(self):
-        stream = io.StringIO(u"foo 1\nfoo 2\nbar 1\nbuz   2")
+        stream = io.StringIO(u"foo 1\nfoo 2\nbar 1\n\nbuz   2")
         expected = [('foo', 3), ('bar', 1), ('buz', 2)]
         result = wordcount.words_reduce_stream(stream)
         self.assertItemsEqual(result, expected)
