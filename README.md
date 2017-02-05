@@ -76,24 +76,30 @@ Ok, machines are set up. Let deploy a 3-node Swarm cluster.
     ```
 2. Set up the [local Docker Registry](https://docs.docker.com/registry/deploying/) to host private docker images:
 
-	```
-	ansible-playbook playbook-registry.yml -vv -i inventory.my.dev
-	```
+    ```
+    ansible-playbook playbook-registry.yml -vv -i inventory.my.dev
+    ```
 3. Add [Swarm visualizer](https://github.com/ManoMarks/docker-swarm-visualizer) for a nice eye-candy. Run this command on Swarm master.
 
-	```
-	# ATTENTION!
-	# Run this on Swarm master, st2.my.dev
+    ```
+    # ATTENTION!
+    # Run this on Swarm master, st2.my.dev
 
-	docker service create \
-	--name=viz \
-   --publish=8080:8080/tcp \
-   --constraint=node.role==manager \
-   --mount=type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock \
-   manomarks/visualizer
-   ```
+    docker service create \
+    --name=viz \
+    --publish=8080:8080/tcp \
+    --constraint=node.role==manager \
+    --mount=type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock \
+    manomarks/visualizer
+    ```
 
-   Connect to Visualizer via [http://st2.my.dev:8080](http://st2.my.dev:8080) and see this one server there.
+    Wait for the service to start - here's a helper script:
+
+    ```
+    ./scripts/waitforservice.sh visualizer
+    ```
+
+    Connect to Visualizer via [http://st2.my.dev:8080](http://st2.my.dev:8080) and see this one server there.
 
 
 ### 3. Install StackStorm:
@@ -140,12 +146,12 @@ Login to a VM. Any node would do as docker is installed on all.
     docker run --rm -v /vagrant/share:/share \
     st2.my.dev:5000/encode -i /share/li.txt -o /share/li.out --delay 1
     ```
-	Reminders:
+    Reminders:
 
-	* `--rm` to remove container once it exits.
-	* `-v` maps `/vagrant/share` of Vagrant VM to `/share` inside the container.
-	  This acts as a shared storage across Swarm VMs as `/vagrant/share` maps to the host machine. On AWS we need to figure good shared storage alternative.
-	* `-i`, `-o`, `--delay` are app parameters.
+    * `--rm` to remove container once it exits.
+    * `-v` maps `/vagrant/share` of Vagrant VM to `/share` inside the container.
+      This acts as a shared storage across Swarm VMs as `/vagrant/share` maps to the host machine. On AWS we need to figure good shared storage alternative.
+    * `-i`, `-o`, `--delay` are app parameters.
 
 
 4. Login to another node, and run the container app from there. It will download the image and run the app.
@@ -196,7 +202,7 @@ args="-i","/share/li.txt","-o","/share/test.out","--delay",3
 To clean-up jobs (we've got a bunch!):
 
 ```
-docker service rm $(docker service ls | grep "job*" | awk '{print $2}'
+docker service rm $(docker service ls | grep "job*" | awk '{print $2}')
 ```
 
 ### 4. Stitch with Workflow
