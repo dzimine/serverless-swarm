@@ -3,8 +3,7 @@
   hosts: st2
   strategy: debug
   vars:
-    # Switch to stable due to https://github.com/StackStorm/ansible-st2/issues/103
-    # st2_pkg_repo: staging-unstable
+    st2_pkg_repo: staging-unstable
     st2_auth_username: st2admin
     st2_auth_password: st2pass
 
