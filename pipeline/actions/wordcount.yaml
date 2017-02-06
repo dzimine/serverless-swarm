@@ -7,18 +7,17 @@ entry_point: workflows/wordcount.yaml
 parameters:
   input_file:
     type: string
-    # XXX: may be name only, relevant to the shared dir?
-    description: Text file to count the words.
+    description: Text file to count the words - full path on host
     required: true
-  result_file:
+  result_file_name:
     type: string
-    description: "Result file with tuples (word, count)"
+    description: Name of result file with tuples (word, count)
     required: true
-  share_on_host:
+  share_host:
     type: string
     description: Path to shared storage on swarm node
     default: /vagrant/share
-  share_in_docker:
+  share_docker:
     type: string
     description: Path to shared storage in docker container
     default: /share
