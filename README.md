@@ -1,4 +1,4 @@
-
+# Serverless framework on Docker, Swarm, and StackStorm
 
 This project came out of a serverless solution for computational genome annotations (a very exciting topic on it’s own). The emerging serverless framework begins to look promising for other applications, and may be interesting to the community.
 
