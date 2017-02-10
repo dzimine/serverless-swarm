@@ -1,12 +1,21 @@
-# Serverless with Docker, Swarm, and StackStorm.
 
-This is my playgrond to prototype "serverless" with Swarm and StackStorm.
-It contains two applications:
 
-* map-reduce wordcount sample - included to try things out end-to-end
-* genomic pipeline computation - for production use;
-  it requires some extra proprietary biotech bits, we are keeping them for ourselves,
-  but we show everything cloud-releated here.
+This project came out of a serverless solution for computational genome annotations (a very exciting topic on it’s own). The emerging serverless framework begins to look promising for other applications, and may be interesting to the community.
+
+At a minimum, this serves as a convenient and reliable playground for Docker Swarm, with local Registry and other cool tools, on your dev box. 
+
+At best, this may involve into a solid Serverless framework.
+
+At the current state, it is an experimenting ground with working examples that produce food for though and more experimenting.
+
+The sample functions and example wordcount map-reduce workflow are here with instructions of how to run them. The bioinformatic part contains some trade-secret bits, so it is kept privately and mixed in to run in production. You are welcome to explore it's orchestration and wiring.
+
+The solution is under active development; your constructive criticism and contributions are welcome:  [@dzimine](https://twitter.com/dzimine) on Twitter, or as [Github issues](https://github.com/dzimine/serverless-swarm/issues).
+
+
+# Deploying Serverless Swarm, from 0 to 5.
+
+Follow these step-by-step instructions to set up Docker Swarm, configure the rest of framework parts, and run a sample app.
 
 ## Clone the repo
 This repo uses submodules, remember to use `recursive` when cloning:
