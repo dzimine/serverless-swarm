@@ -54,15 +54,11 @@ class RunJobAction(Action):
 
         # Create service
         try:
-            sargs = [str(x) for x in args] if args else None
-            if mounts:
-                m = []
-                for mount in mounts:
-                    m.append(_parse_mount_string(mount))
-                mounts = m
+            args = [str(x) for x in args] if args else None
+            mounts = [_parse_mount_string(mount) for mount in mounts] if mounts else None
 
             cs = docker.types.ContainerSpec(
-                image, command=command, args=sargs, mounts=mounts)
+                image, command=command, args=args, mounts=mounts)
             r = {'Reservation': {'MemoryBytes': reserve_memory, 'NanoCPUs': reserve_cpu}}
             tt = docker.types.TaskTemplate(
                 cs, restart_policy={'Condition': 'none'}, resources=r)
@@ -72,7 +68,7 @@ class RunJobAction(Action):
 
             self.logger.info("Job %s created: %s", name, job)
 
-            # NOTE: with `restart-condition=none`, there is only one task.
+            # NOTE: with `restart-condition=none`, there is only one task per replica.
             #       In general case polling doesn't work well as swarm restart tasks,
             #       keeping 5 latest tasks.
 
@@ -94,18 +90,18 @@ class RunJobAction(Action):
                 if state == 'complete':
                     break
 
-            # XXX: remove the job?
+            # XXX: remove the job? Keeping for now for debugging.
             # self.logger.info("Removing job %s", name)
 
         except docker.errors.APIError as e:
             self.logger.error(e)
             return (False, str(e))
 
-        obj = {
+        res = {
             'job': name,
             'image': image,
             'command': command,
             'args': args
         }
 
-        return (True, obj)
+        return (True, res)
