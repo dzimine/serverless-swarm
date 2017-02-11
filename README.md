@@ -1,16 +1,26 @@
 # Serverless framework on Docker, Swarm, and StackStorm
 
-This project came out of a serverless solution for computational genome annotations (a very exciting topic on it’s own). The emerging serverless framework begins to look promising for other applications, and may be interesting to the community.
+This project came out of a serverless solution for computational genome
+annotations (a very exciting topic on it’s own). The emerging serverless
+framework begins to look promising for other applications, and may be
+interesting to the community.
 
-At a minimum, this serves as a convenient and reliable playground for Docker Swarm, with local Registry and other cool tools, on your dev box. 
+At a minimum, this serves as a convenient and reliable playground for Docker Swarm, with local Registry and other cool tools, on your dev box.
 
 At best, this may involve into a solid Serverless framework.
 
-At the current state, it is an experimenting ground with working examples that produce food for though and more experimenting.
+At the current state, it is an experimenting ground with working examples that
+produce food for though and more experimenting.
 
-The sample functions and example wordcount map-reduce workflow are here with instructions of how to run them. The bioinformatic part contains some trade-secret bits, so it is kept privately and mixed in to run in production. You are welcome to explore it's orchestration and wiring.
+The sample functions and example wordcount map-reduce workflow are here with
+instructions of how to run them. The bioinformatic part contains some trade-
+secret bits, so it is kept privately and mixed in to run in production. You
+are welcome to explore it's orchestration and wiring.
 
-The solution is under active development; your constructive criticism and contributions are welcome:  [@dzimine](https://twitter.com/dzimine) on Twitter, or as [Github issues](https://github.com/dzimine/serverless-swarm/issues).
+The solution is under active development; your constructive criticism and
+contributions are welcome:  [@dzimine](https://twitter.com/dzimine) on
+Twitter, or as [Github issues](https://github.com/dzimine/serverless-
+swarm/issues).
 
 
 # Deploying Serverless Swarm, from 0 to 5.
@@ -45,11 +55,13 @@ First we need to provision machines where Swarm will be deployed. I'll use thee 
 Roles are described as code in [`inventory.my.dev`]() file. Dah, this proto
 setup is for play, not for production.
 
-Vagrant is used to create a repeatable local dev environment, with convinience
+
+#### 1.1 Setup host machine
+Vagrant is used to create a local dev environment representative of a production one, with convinience
 tricks inspired by [6 practices for super smooth Ansible
 experience](http://hakunin.com/six-ansible-practices). This will set 3 boxes,
 named `st2.my.dev`, `node1.my.dev`, and `node2.my.dev`, with ssh access
-configured for root. Set up steps:
+configured for root.
 
 1. Generate  a pair of SSH keys:  `~/.ssh/id_rsa`, `~/.ssh/id_rsa.pub` (to
 use different keys, update the call to `authorize_key_for_root` in
@@ -73,11 +85,13 @@ use different keys, update the call to `authorize_key_for_root` in
     vagrant plugin install vagrant-hostmanager
     ```
 
-4. Run `vagrant up`. You will need to type in the password to let Vagrant
+#### 1.2 Vagrant up
+
+Run `vagrant up`. You will need to type in the password to let Vagrant
 update `/etc/hosts/`.
 
-5. Profit. Log in as a root with `ssh st2.my.dev`, `ssh node1.my.dev`, and
-`ssh node2.my.dev`.
+Profit! Log in as a root with `ssh st2.my.dev`, `ssh node1.my.dev`, and
+`ssh node2.my.dev`. Check that the VMs' `/vagrant/` mount works: `ls /vagrant`.
 
 Troubles: Due to [hostmanager bugs](https://github.com/devopsgroup-io/vagrant-
 hostmanager/issues/159), `/etc/hosts` on the host machine may not be cleaned
@@ -86,6 +100,9 @@ up. Clean it up by hands.
 
 ### 2. Deploy Swarm cluster
 Ok, machines are set up. Let deploy a 3-node Swarm cluster.
+I use [ansible-dockerswarm](https://github.com/atosatto/ansible-dockerswarm) from
+[@atosatto](https://github.com/atosatto) and my own addition to set up the local
+Registry.
 
 1. Create Swarm cluster:
 
@@ -119,7 +136,8 @@ Ok, machines are set up. Let deploy a 3-node Swarm cluster.
     ./scripts/waitforservice.sh visualizer
     ```
 
-    Connect to Visualizer via [http://st2.my.dev:8080](http://st2.my.dev:8080) and see this one server there.
+    Connect to Visualizer via [http://st2.my.dev:8080](http://st2.my.dev:8080)
+    and see this one server there.
 
 
 ### 3. Install StackStorm:
@@ -129,10 +147,29 @@ ansible-playbook playbook-st2.yml -vv -i inventory.my.dev
 
 ```
 
-**Pat me on a back, infra is done!** We got three nodes with docker, running as Swarm,
-with local Registry, and StackStorm to rule them all.
+Install `pipeline` pack. A hackish way is to symlink it in place, for development:
+
+```
+ln -s /vagrant/pipeline/ /opt/stackstorm/packs/
+st2 run packs.setup_virtualenv packs=pipeline
+st2ctl reload
+```
+
+Check the action is in place: run `st2 action list --pack=pipeline` and verify
+that it returned some actions.
+
+**Pat yourself on a back, infra is done!** We got three nodes with docker,
+running as Swarm, with local Registry, and StackStorm to rule them all.
+
+### 4. Deploy on AWS with Terraform
+Coming up...
 
 ## Play time!
+
+Here comes a little refresher on how to run things on Swarm: with plain
+Docker, with Swarm services, and with StackStorm actions and workflows. You
+may want to skip it and jump right to [Wordcount Map-Reduce Example
+](#wordcount-map-reduce-example).
 
 ### 1. Running app in plain Docker
 
@@ -188,20 +225,10 @@ docker service create --name job2 \
 -i /share/li.txt -o /share/li.out --delay 20
 ```
 
-Run it a few times, enjoy seeing them pile up in visualizer, just be sure to give a different job name.
+Run it a few times, enjoy seeing them pile up in visualizer, just be sure to
+give a different job name.
 
 ### 3. Now repeat with StackStorm
-Run StackStorm pipeline pack.
-
-Install `pipeline` pack. Hackish way is to symlink it in place:
-
-```
-ln -s /vagrant/pipeline/ /opt/stackstorm/packs/
-st2 run packs.setup_virtualenv packs=pipeline
-st2ctl reload
-# check the action is in place and ready
-st2 action list --pack=pipeline
-```
 
 Run the job via stackstorm:
 
@@ -229,11 +256,11 @@ parallels=4 delay=10
 Use StackStorm UI at [https://st2.my.dev](https://st2.my.dev) to inspect workflow execution.
 
 
-### 5. Map-Reduce example
+## Wordcount Map-Reduce Example
 
-Here we run wordcount map-reduce sample on Swarm cluster. The `split`, `map`, and `reduce` are
-containerized functions, `run_job` action runs them on Swarm cluster,
-StackStorm workflow is orchestrating the end-to-end process.
+Here we run wordcount map-reduce sample on Swarm cluster. The `split`, `map`,
+and `reduce` are containerized functions, `run_job` action runs them on Swarm
+cluster, StackStorm workflow is orchestrating the end-to-end process.
 
 
 Create containerized functions for map-reduce and push them to the Registry:
@@ -255,9 +282,11 @@ parallels=8 delay=10
 Enjoy the show via [Vizualizer at http://st2.my.dev:8080](http://st2.my.dev:8080)
 and [StackStorm UI at https://st2.my.dev](https://st2.my.dev)
 
-For details, see [apps/wordcount/README.md](apps/wordcount/README.md) and inspect the code there.
+For details, see [apps/wordcount/README.md](apps/wordcount/README.md) and
+inspect the code, docker containers, and pipeline workflow at
+[pipeline/actions/wordcout.yaml](pipeline/actions/wordcout.yaml).
 
-## Misc
+## Miscelenious Topics
 * To run a parallel setup on the same dev box:
     * Pick a different domain and IP range, e.g. `*.dev.net`, `192.168.88.*`):
     * Clone another copy of swarm-pipeline
