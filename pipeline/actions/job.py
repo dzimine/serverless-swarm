@@ -46,13 +46,15 @@ class RunJobAction(Action):
         self.client = docker.DockerClient(base_url='unix://var/run/docker.sock')
         self.pool_interval = 1
 
-    def run(self, image, command=None, args=None, mounts=None, name=None):
+    def run(self, image, command=None, args=None, mounts=None, name=None,
+            reserve_cpu=None, reserve_memory=None):
+
         name = "{}-{}".format(name, hex(random.getrandbits(64)).lstrip('0x'))
         self.logger.info("Creating job %s", name)
 
         # Create service
         try:
-            sargs = [str(x) for x in args]
+            sargs = [str(x) for x in args] if args else None
             if mounts:
                 m = []
                 for mount in mounts:
@@ -61,7 +63,9 @@ class RunJobAction(Action):
 
             cs = docker.types.ContainerSpec(
                 image, command=command, args=sargs, mounts=mounts)
-            tt = docker.types.TaskTemplate(cs, restart_policy={'Condition': 'none'})
+            r = {'Reservation': {'MemoryBytes': reserve_memory, 'NanoCPUs': reserve_cpu}}
+            tt = docker.types.TaskTemplate(
+                cs, restart_policy={'Condition': 'none'}, resources=r)
             self.logger.debug("TaskTemplate: %s", tt)
 
             job = self.client.api.create_service(tt, name=name)
@@ -84,15 +88,14 @@ class RunJobAction(Action):
                 self.logger.debug("Job %s task %s: %s", job['ID'], task['ID'], state)
 
                 if state in ('failed', 'rejected'):
-                    self.logger.error(status['Err'])
-                    # XXX: remove the job?
-                    # self.logger.info("Removing job %s", name)
+                    self.logger.error("Job %s: %s", state, status['Err'])
                     return (False, status['Err'])
 
                 if state == 'complete':
                     break
 
-            # TODO(dzimine): Handle "out of resources" case
+            # XXX: remove the job?
+            # self.logger.info("Removing job %s", name)
 
         except docker.errors.APIError as e:
             self.logger.error(e)

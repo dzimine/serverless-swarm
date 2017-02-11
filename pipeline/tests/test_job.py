@@ -55,7 +55,8 @@ class RunJobActionTestCase(BaseActionTestCase):
         action.pool_interval = 0
         result = action.run(
             image="alpine", command=None, args=['ping', '192.168.1.1'],
-            mounts=["source=/foo/bar,dst=/bar,type=bind", "src=foo,dst=bar"])
+            mounts=["source=/foo/bar,dst=/bar,type=bind", "src=foo,dst=bar"],
+            name="myjob", reserve_cpu=4, reserve_memory=536870912)
 
         expected = {
             'ContainerSpec': {
@@ -63,11 +64,13 @@ class RunJobActionTestCase(BaseActionTestCase):
                 'Command': None,
                 'Image': 'alpine',
                 'Mounts': [
-                    {'Source': '/foo/bar', 'Target': '/bar', 'Type': 'bind'},
-                    {'Source': 'foo', 'Target': 'bar', 'Type': 'volume'}
+                    {'Source': '/foo/bar', 'Target': '/bar', 'Type': 'bind', 'ReadOnly': False},
+                    {'Source': 'foo', 'Target': 'bar', 'Type': 'volume', 'ReadOnly': False}
                 ]
+
             },
-            'RestartPolicy': {'Condition': 'none'}
+            'RestartPolicy': {'Condition': 'none'},
+            'Resources': {'Reservation': {'MemoryBytes': 536870912, 'NanoCPUs': 4}}
         }
         mock_create.assert_called_once_with(expected, name=result[1]['job'])
         mock_tasks.assert_called_with(filters={'service': '1111'})
@@ -88,7 +91,8 @@ class RunJobActionTestCase(BaseActionTestCase):
                 'Command': None,
                 'Args': None
             },
-            'RestartPolicy': {'Condition': 'none'}
+            'RestartPolicy': {'Condition': 'none'},
+            'Resources': {'Reservation': {'MemoryBytes': None, 'NanoCPUs': None}}
         }
         mock_create.assert_called_once_with(expected, name=result[1]['job'])
         mock_tasks.assert_called_with(filters={'service': '1111'})
