@@ -5,12 +5,13 @@ pipeline.wordcount:
   description: "See ../wordcount.yaml"
   vars:
     mounts:
-      - "type=bind,source=<% $.share_on_host %>,target=<% $.share_in_docker %>"
+      - "type=bind,source=<% $.share_host %>/wordcount.<% env().st2_execution_id %>,target=<% $.share_docker %>"
+    workdir_host: <% $.share_host %>/wordcount.<% env().st2_execution_id %>
   input:
     - input_file
-    - result_file
-    - share_on_host
-    - share_in_docker
+    - result_filename
+    - share_host
+    - share_docker
     - parallels
     - delay
 
@@ -20,37 +21,50 @@ pipeline.wordcount:
   output:
     context: <% $ %>
   tasks:
+
+    setup_working_directory:
+      action: core.local_sudo
+      input:
+        cmd: mkdir -p <% $.workdir_host %> && cp <% $.input_file %> <% $.workdir_host %> && ls <% $.workdir_host %>
+      publish:
+        input_file_name: <% task(setup_working_directory).result.stdout %>
+      on-success: split
+
     split:
       action: pipeline.run_job
       input:
         image: st2.my.dev:5000/split
         args:
-            - "<% $.input_file %>"
+            - "<% $.share_docker %>/<% $.input_file_name %>"
             - "<% $.parallels %>"
-            - <% $.share_in_docker %>/out
+            - <% $.share_docker %>/out
         mounts: <% $.mounts %>
         name: split
       on-success: map
 
     map:
       with-items: i in <% list(range(1, 1 + $.parallels)) %>
+      # This throttles execution concurrency by Mistral/StackStorm
       # concurrency: 4
       action: pipeline.run_job
       input:
         image: st2.my.dev:5000/map
         args:
-          - "<% $.share_in_docker %>/out.<% $.i %>"
-          - "<% $.share_in_docker %>/out.map.<% $.i %>"
+          - "<% $.share_docker %>/out.<% $.i %>"
+          - "<% $.share_docker %>/out.map.<% $.i %>"
           - <% $.delay %>
         mounts: <% $.mounts %>
         name: map
+        # Play with this to simulate high load
+        # reserve_cpu: 4
+        # reserve_memory: 536870912
       on-success: combine_map_results
 
     combine_map_results:
       action: core.local_sudo
       input:
         cmd: cat out.map.* > map.out
-        cwd: <% $.share_on_host %>
+        cwd: <% $.workdir_host %>
       on-success: reduce
 
     reduce:
@@ -58,8 +72,8 @@ pipeline.wordcount:
       input:
         image: st2.my.dev:5000/reduce
         args:
-          - <% $.share_in_docker %>/map.out
-          - <% $.result_file %>
+          - <% $.share_docker %>/map.out
+          - <% $.share_docker %>/<% $.result_filename %>
           - <% $.delay %>
         mounts: <% $.mounts %>
         name: reduce

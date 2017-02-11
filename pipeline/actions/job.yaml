@@ -26,6 +26,12 @@ parameters:
         description: "Job name prefix (default is `job`)"
         required: false
         default: "job"
+    reserve_cpu:
+        type: integer
+        description: CPU limit in units of 10^9 CPU shares.
+    reserve_memory:
+        type: integer
+        description: Memory limit in Bytes.
 
     # TODO: expand to all docker service commands
 

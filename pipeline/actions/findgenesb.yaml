@@ -7,7 +7,7 @@ entry_point: workflows/findgenesb.yaml
 parameters:
   input_file:
     type: string
-    description: DNK sequence input file
+    description: DNK sequence input file - full path on host.
     required: true
   min_len:
     type: integer
@@ -17,21 +17,29 @@ parameters:
     type: string
     description: "BLAST database path, relative to DATA directory. Example: cog_db/cog.pro"
     default: cog_db/cog.pro
-  result_file:
+  result_filename:
     type: string
-    description: "Final result file"
+    description: Final result file name, find it in resutl dir.
     required: true
-  share_on_host:
+  share_host:
     type: string
-    description: Path to shared storage on swarm node
+    description: Path to shared storage on host (swarm worker node)
     default: /vagrant/share
-  share_in_docker:
+  share_docker:
     type: string
     description: Path to shared storage in docker container
     default: /share
+  share_data_host:
+    type: string
+    description: Path to DATA readonly storage on host (swarm worker node)
+    default: /vagrant/DATA
+  share_data_docker:
+    type: string
+    description: Path to DATA readonly storage in docker container
+    default: /sb/DATA
   parallels:
     type: integer
-    description: Number of parallel executions for "map" task
+    description: Number of parallel executions for "blast" task
     default: 2
   delay:
     type: integer

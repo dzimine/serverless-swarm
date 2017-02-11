@@ -46,29 +46,29 @@ class RunJobAction(Action):
         self.client = docker.DockerClient(base_url='unix://var/run/docker.sock')
         self.pool_interval = 1
 
-    def run(self, image, command=None, args=None, mounts=None, name=None):
+    def run(self, image, command=None, args=None, mounts=None, name=None,
+            reserve_cpu=None, reserve_memory=None):
+
         name = "{}-{}".format(name, hex(random.getrandbits(64)).lstrip('0x'))
         self.logger.info("Creating job %s", name)
 
         # Create service
         try:
-            sargs = [str(x) for x in args]
-            if mounts:
-                m = []
-                for mount in mounts:
-                    m.append(_parse_mount_string(mount))
-                mounts = m
+            args = [str(x) for x in args] if args else None
+            mounts = [_parse_mount_string(mount) for mount in mounts] if mounts else None
 
             cs = docker.types.ContainerSpec(
-                image, command=command, args=sargs, mounts=mounts)
-            tt = docker.types.TaskTemplate(cs, restart_policy={'Condition': 'none'})
+                image, command=command, args=args, mounts=mounts)
+            r = {'Reservation': {'MemoryBytes': reserve_memory, 'NanoCPUs': reserve_cpu}}
+            tt = docker.types.TaskTemplate(
+                cs, restart_policy={'Condition': 'none'}, resources=r)
             self.logger.debug("TaskTemplate: %s", tt)
 
             job = self.client.api.create_service(tt, name=name)
 
             self.logger.info("Job %s created: %s", name, job)
 
-            # NOTE: with `restart-condition=none`, there is only one task.
+            # NOTE: with `restart-condition=none`, there is only one task per replica.
             #       In general case polling doesn't work well as swarm restart tasks,
             #       keeping 5 latest tasks.
 
@@ -84,25 +84,24 @@ class RunJobAction(Action):
                 self.logger.debug("Job %s task %s: %s", job['ID'], task['ID'], state)
 
                 if state in ('failed', 'rejected'):
-                    self.logger.error(status['Err'])
-                    # XXX: remove the job?
-                    # self.logger.info("Removing job %s", name)
+                    self.logger.error("Job %s: %s", state, status['Err'])
                     return (False, status['Err'])
 
                 if state == 'complete':
                     break
 
-            # TODO(dzimine): Handle "out of resources" case
+            # XXX: remove the job? Keeping for now for debugging.
+            # self.logger.info("Removing job %s", name)
 
         except docker.errors.APIError as e:
             self.logger.error(e)
             return (False, str(e))
 
-        obj = {
+        res = {
             'job': name,
             'image': image,
             'command': command,
             'args': args
         }
 
-        return (True, obj)
+        return (True, res)
