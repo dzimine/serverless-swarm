@@ -9,7 +9,7 @@ pipeline.wordcount:
     workdir_host: <% $.share_host %>/wordcount.<% env().st2_execution_id %>
   input:
     - input_file
-    - result_file_name
+    - result_filename
     - share_host
     - share_docker
     - parallels
@@ -44,6 +44,7 @@ pipeline.wordcount:
 
     map:
       with-items: i in <% list(range(1, 1 + $.parallels)) %>
+      # This throttles execution concurrency by Mistral/StackStorm
       # concurrency: 4
       action: pipeline.run_job
       input:
@@ -54,6 +55,9 @@ pipeline.wordcount:
           - <% $.delay %>
         mounts: <% $.mounts %>
         name: map
+        # Play with this to simulate high load
+        # reserve_cpu: 4
+        # reserve_memory: 536870912
       on-success: combine_map_results
 
     combine_map_results:
@@ -69,7 +73,7 @@ pipeline.wordcount:
         image: st2.my.dev:5000/reduce
         args:
           - <% $.share_docker %>/map.out
-          - <% $.share_docker %>/<% $.result_file_name %>
+          - <% $.share_docker %>/<% $.result_filename %>
           - <% $.delay %>
         mounts: <% $.mounts %>
         name: reduce

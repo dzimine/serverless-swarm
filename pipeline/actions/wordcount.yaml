@@ -9,13 +9,13 @@ parameters:
     type: string
     description: Text file to count the words - full path on host
     required: true
-  result_file_name:
+  result_filename:
     type: string
     description: Name of result file with tuples (word, count)
     required: true
   share_host:
     type: string
-    description: Path to shared storage on swarm node
+    description: Path to shared storage on host (swarm worker node)
     default: /vagrant/share
   share_docker:
     type: string

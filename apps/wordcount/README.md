@@ -82,10 +82,12 @@ rm /vagrant/share/*out*
  ```
 
 ## Orchestrate with StackStorm workflow
+
 ```
-st2 run pipeline.wordcount \
-input_file=/share/loremipsum.txt result_file=/share/loremipsum.res \
+st2 run -a pipeline.wordcount \
+input_file=/vagrant/share/loremipsum.txt result_filename=loremipsum.res \
 parallels=8 delay=10
 ```
-## Development
-To run unit tests, install `pytest` and run it from project root.
+
+## Unit tests
+Install `pytest` and run it from project root.

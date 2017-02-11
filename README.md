@@ -194,15 +194,6 @@ st2ctl reload
 st2 action list --pack=pipeline
 ```
 
-To run the pack's unit tests:
-
-```
-# Dang I need ST2
-git clone --depth=1 https://github.com/StackStorm/st2.git /tmp/st2
-# Run unit tests now
-ST2_REPO_PATH=/tmp/st2 /opt/stackstorm/st2/bin/st2-run-pack-tests -p /opt/stackstorm/packs/pipeline
-```
-
 Run the job via stackstorm:
 
 ```
@@ -228,7 +219,6 @@ parallels=4 delay=10
 ```
 Use StackStorm UI at [https://st2.my.dev](https://st2.my.dev) to inspect workflow execution.
 
-TODO: Continue expanding the workflow to make more representative.
 
 ### 5. Map-Reduce example
 
@@ -249,7 +239,7 @@ Run the workflow:
 
 ```
 st2 run -a pipeline.wordcount \
-input_file=/share/loremipsum.txt result_file=/share/loremipsum.res \
+input_file=/vagrant/share/loremipsum.txt result_filename=loremipsum.res \
 parallels=8 delay=10
 ```
 
