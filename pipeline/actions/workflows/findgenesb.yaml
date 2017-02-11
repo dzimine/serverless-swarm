@@ -4,18 +4,22 @@ version: '2.0'
 pipeline.findgenesb:
   description: "See ../findgenesb.yaml"
   vars:
-    fgenesb_res_file: /share/fgenesb.res
+    fgenesb_res_file: /share/fgenesb.res # in container
     tempfile_prefix: out
     mounts:
-      - "type=bind,source=<% $.share_on_host %>,target=<% $.share_in_docker %>"
-      - "type=bind,source=/vagrant/DATA,target=/sb/DATA"
+      - "type=bind,source=<% $.share_host %>/findgenesb.<% env().st2_execution_id %>,target=<% $.share_docker %>"
+      - "type=bind,source=<% $.share_data_host %>,target=<% $.share_data_docker %>,readonly"
+    workdir_host: <% $.share_host %>/findgenesb.<% env().st2_execution_id %>
+
   input:
     - input_file
     - min_len
     - database_path
-    - result_file
-    - share_on_host
-    - share_in_docker
+    - result_filename
+    - share_host
+    - share_docker
+    - share_data_host
+    - share_data_docker
     - parallels
     - delay
 
@@ -25,12 +29,21 @@ pipeline.findgenesb:
   output:
     context: <% $ %>
   tasks:
+
+    setup_working_directory:
+      action: core.local_sudo
+      input:
+        cmd: mkdir -p <% $.workdir_host %> && cp <% $.input_file %> <% $.workdir_host %> && ls <% $.workdir_host %>
+      publish:
+        input_file_name: <% task(setup_working_directory).result.stdout %>
+      on-success: find_genomes_and_bacterias
+
     find_genomes_and_bacterias:
       action: pipeline.run_job
       input:
         image: st2.my.dev:5000/fgenesb
         args:
-            - "<% $.input_file %>"
+            - "<% $.share_docker %>/<% $.input_file_name %>"
             - "<% $.fgenesb_res_file %>"
             - <% str($.min_len) %>
         mounts: <% $.mounts %>
@@ -45,11 +58,11 @@ pipeline.findgenesb:
           - "-c"
           - >
               /sb/blast_scripts/fgenesb_get_proteins.pl
-              <% $.fgenesb_res_file %> > <% $.share_in_docker %>/prot2blast.0 ;
+              <% $.fgenesb_res_file %> > <% $.share_docker %>/prot2blast.0 ;
               /sb/extra/seqsplit.py
-              <% $.share_in_docker %>/prot2blast.0
-              <% $.share_in_docker %>/<% $.tempfile_prefix %> <% $.parallels %> ;
-              ls <% $.share_in_docker %>/<% $.tempfile_prefix %>*
+              <% $.share_docker %>/prot2blast.0
+              <% $.share_docker %>/<% $.tempfile_prefix %> <% $.parallels %> ;
+              ls <% $.share_docker %>/<% $.tempfile_prefix %>*
         mounts: <% $.mounts %>
       on-success: blast
 
@@ -60,9 +73,9 @@ pipeline.findgenesb:
       input:
         image: st2.my.dev:5000/blast_fb
         args:
-          - "<% $.share_in_docker %>/<% $.tempfile_prefix %>.<% $.i %>"
+          - "<% $.share_docker %>/<% $.tempfile_prefix %>.<% $.i %>"
           - "/sb/DATA/<% $.database_path %>"
-          - "<% $.share_in_docker %>/<% $.tempfile_prefix %>.blast.<% $.i %>"
+          - "<% $.share_docker %>/<% $.tempfile_prefix %>.blast.<% $.i %>"
           - "/sb/blast-2.2.26/bin/blastpgp"
           - "1e-10"
           - "2"
@@ -73,7 +86,7 @@ pipeline.findgenesb:
       action: core.local_sudo
       input:
         cmd: cat <% $.tempfile_prefix %>.blast.* > <% $.tempfile_prefix %>.final
-        cwd: <% $.share_on_host %>
+        cwd: <% $.workdir_host %>
       on-success: build_final_result
 
     build_final_result:
@@ -82,6 +95,6 @@ pipeline.findgenesb:
         image: st2.my.dev:5000/fgenesb_out
         args:
           - <% $.fgenesb_res_file %>
-          - <% $.share_in_docker %>/<% $.tempfile_prefix %>.final
-          - <% $.result_file %>
+          - <% $.share_docker %>/<% $.tempfile_prefix %>.final
+          - <% $.share_docker %>/<% $.result_filename %>
         mounts: <% $.mounts %>
