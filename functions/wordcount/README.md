@@ -6,6 +6,24 @@ Consists of `split.py`, `map.py`, and `reduce.py`.
 
 ### Usage
 
+1. Configure Swarm and StackStorm, per [../../README.md](../../README.md)
+
+2. Build the containers and push to local repo. From the current directoy, run:
+
+    ```
+    ./docker-build.sh
+    ```
+
+3. With StackStorm installed and pipeline pack set up (Configure StackStorm (follow ), and run the pipeline workflow:
+
+    ```
+    st2 run -a pipeline.wordcount \
+    input_file=/vagrant/share/loremipsum.txt result_filename=loremipsum.res \
+    parallels=8 delay=10
+    ```
+
+## Details
+
 Test on a tiny file:
 
 ```
@@ -51,10 +69,9 @@ rm data/*out*
 
 Ssh to the any of a docker boxes, e.g. `ssh st2.my.dev`. Move (It is `/vagrant/` in dev environment, adjust accordingly).
 
-Build docker containers:
+Build docker containers. From the current directory, run commands:
 
 ```
-cd cd /vagrant/apps/wordcount/
 
 docker build -t split -f Split.Dockerfile .
 docker build -t map -f Map.Dockerfile .
@@ -81,13 +98,6 @@ rm /vagrant/share/*out*
 
  ```
 
-## Orchestrate with StackStorm workflow
-
-```
-st2 run -a pipeline.wordcount \
-input_file=/vagrant/share/loremipsum.txt result_filename=loremipsum.res \
-parallels=8 delay=10
-```
-
 ## Unit tests
+
 Install `pytest` and run it from project root.

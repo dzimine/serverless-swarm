@@ -25,7 +25,7 @@ swarm/issues).
 
 # Deploying Serverless Swarm, from 0 to 5.
 
-Follow these step-by-step instructions to set up Docker Swarm, configure the rest of framework parts, and run a sample app.
+Follow these step-by-step instructions to set up Docker Swarm, configure the rest of framework parts, and run a sample serverless pipeline.
 
 ## Clone the repo
 This repo uses submodules, remember to use `recursive` when cloning:
@@ -171,23 +171,23 @@ Docker, with Swarm services, and with StackStorm actions and workflows. You
 may want to skip it and jump right to [Wordcount Map-Reduce Example
 ](#wordcount-map-reduce-example).
 
-### 1. Running app in plain Docker
+### 1. Running an app, or "function", in plain Docker
 
-The apps are placed in (drum-rolls...) `./apps`.
+The apps, or "functions" are placed in (drum-rolls...) `./functions`.
 By the virtue of default Vagrant share, it is available inside
-all VMs at `/vagrant/apps`.
+all VMs at `/vagrant/functions`.
 
 Login to a VM. Any node would do as docker is installed on all.
 
     ssh node1.my.dev
 
-1. Build an app:
+1. Build a function:
 
     ```
-    cd /vagrant/apps/encode
+    cd functions/encode
     docker build -t encode .
     ```
-2. Push the app to local docker registry:
+2. Push the function to local docker registry:
 
     ```
     docker tag encode st2.my.dev:5000/encode
@@ -198,7 +198,7 @@ Login to a VM. Any node would do as docker is installed on all.
     curl --cacert /etc/docker/certs.d/st2.my.dev\:5000/registry.crt -X GET https://st2.my.dev:5000/v2/encode/tags/list
     ```
 
-4. Run the app:
+4. Run the function:
 
     ```
     docker run --rm -v /vagrant/share:/share \
@@ -210,10 +210,10 @@ Login to a VM. Any node would do as docker is installed on all.
     * `-v` maps `/vagrant/share` of Vagrant VM to `/share` inside the container.
       This acts as a shared storage across Swarm VMs as `/vagrant/share` maps to the host machine.
       On AWS we need to figure good shared storage alternative.
-    * `-i`, `-o`, `--delay` are app parameters.
+    * `-i`, `-o`, `--delay` are function parameters.
 
 
-4. Login to another node, and run the container app from there. It will download the image and run the app.
+4. Login to another node, and run the container function from there. It will download the image and run the function.
 
 ### 2. Swarm is coming to town
 Run the job with swarm command-line:
@@ -266,7 +266,7 @@ cluster, StackStorm workflow is orchestrating the end-to-end process.
 Create containerized functions for map-reduce and push them to the Registry:
 
 ```
-cd apps/wordcount
+cd functions/wordcount
 ./docker-build.sh
 
 ```
@@ -282,7 +282,7 @@ parallels=8 delay=10
 Enjoy the show via [Vizualizer at http://st2.my.dev:8080](http://st2.my.dev:8080)
 and [StackStorm UI at https://st2.my.dev](https://st2.my.dev)
 
-For details, see [apps/wordcount/README.md](apps/wordcount/README.md) and
+For details, see [functions/wordcount/README.md](functions/wordcount/README.md) and
 inspect the code, docker containers, and pipeline workflow at
 [pipeline/actions/wordcout.yaml](pipeline/actions/wordcout.yaml).
 

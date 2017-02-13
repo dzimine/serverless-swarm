@@ -36,7 +36,8 @@ The following containers are built:
 SSH to a controller node (`st2.my.dev`). Place the sequence input file (e.g. `test.seq`) in the `share`, and launch workflow action:
 
 ```
-st2 run pipeline.findgenesb input_file=/vagrant/share/test.seq min_len=150 result_filename=result1.result parallels=4
+st2 run pipeline.findgenesb -a input_file=/vagrant/share/test.seq \
+min_len=150 result_filename=result1.result parallels=4
 ```
 
 ### How to run the pipeline manually
