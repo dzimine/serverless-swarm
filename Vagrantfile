@@ -14,9 +14,7 @@ nodes = { # [ count, ip block start, vcpu, mem ]
   'node'  => [2, 101, 2, 1024],
   'st2'   => [1, 200, 2, 2048],
 }
-# TODO: use defaults, pass from ENV VARS
-# $ip_base = "192.168.88."
-# $domain = "dev.net"
+
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.box = "ubuntu/trusty64"

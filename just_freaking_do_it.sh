@@ -11,8 +11,12 @@ echo ""
 
 set -e
 
-DOMAIN=${DOMAIN:-"dev.net"}
-IP_BASE=${IP_BASE:-"192.168.88"}
+# DOMAIN=${DOMAIN:-"dev.net"}
+# IP_BASE=${IP_BASE:-"192.168.88"}
+# INVENTORY="inventory.${DOMAIN}"
+
+DOMAIN=${DOMAIN:-"my.dev"}
+IP_BASE=${IP_BASE:-"192.168.80"}
 INVENTORY="inventory.${DOMAIN}"
 
 source ./scripts/timer.sh
