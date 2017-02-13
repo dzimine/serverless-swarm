@@ -30,12 +30,12 @@ Follow these step-by-step instructions to set up Docker Swarm, configure the res
 ## Clone the repo
 This repo uses submodules, remember to use `recursive` when cloning:
 ```
-git clone --recursive https://github.com/dzimine/swarm-pipeline.git
-cd swarm-pipeline
+git clone --recursive https://github.com/dzimine/serverless-swarm.git
+cd serverless-swarm
 ```
 If you have have already cloned the repo without `--recursive`, just do:
 ```
-cd swarm-pipeline
+cd serverless-swarm
 git submodule update --init --recursive
 ```
 ## Setting Up
@@ -289,7 +289,7 @@ inspect the code, docker containers, and pipeline workflow at
 ## Miscelenious Topics
 * To run a parallel setup on the same dev box:
     * Pick a different domain and IP range, e.g. `*.dev.net`, `192.168.88.*`):
-    * Clone another copy of swarm-pipeline
+    * Clone another copy of serverless-swarm
     * Add a new section to the `~/.ssh/config`:
 
         ```
