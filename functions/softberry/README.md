@@ -37,7 +37,7 @@ SSH to a controller node (`st2.my.dev`). Place the sequence input file (e.g. `te
 
 ```
 st2 run -a pipeline.findgenesb input_file=/vagrant/share/test.seq \
-min_len=150 result_filename=result1.result parallels=4
+min_len=150 result_filename=result.result parallels=4
 ```
 
 ### How to run the pipeline manually
