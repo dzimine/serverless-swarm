@@ -36,7 +36,8 @@ pipeline.findgenesb:
         cmd: mkdir -p <% $.workdir_host %> && cp <% $.input_file %> <% $.workdir_host %> && ls <% $.workdir_host %>
       publish:
         input_file_name: <% task(setup_working_directory).result.stdout %>
-      on-success: find_genomes_and_bacterias
+      on-success:
+        - find_genomes_and_bacterias
 
     find_genomes_and_bacterias:
       action: pipeline.run_job
@@ -47,7 +48,8 @@ pipeline.findgenesb:
             - "<% $.fgenesb_res_file %>"
             - <% str($.min_len) %>
         mounts: <% $.mounts %>
-      on-success: prepare_to_blast
+      on-success:
+        - prepare_to_blast
 
     prepare_to_blast:
       action: pipeline.run_job
@@ -64,7 +66,8 @@ pipeline.findgenesb:
               <% $.share_docker %>/<% $.tempfile_prefix %> <% $.parallels %> ;
               ls <% $.share_docker %>/<% $.tempfile_prefix %>*
         mounts: <% $.mounts %>
-      on-success: blast
+      on-success:
+        - blast
 
     blast:
       with-items: i in <% list(range(1, 1 + $.parallels)) %>
@@ -80,14 +83,16 @@ pipeline.findgenesb:
           - "1e-10"
           - "2"
         mounts: <% $.mounts %>
-      on-success: combine_blast_results
+      on-success:
+        - combine_blast_results
 
     combine_blast_results:
       action: core.local_sudo
       input:
         cmd: cat <% $.tempfile_prefix %>.blast.* > <% $.tempfile_prefix %>.final
         cwd: <% $.workdir_host %>
-      on-success: build_final_result
+      on-success:
+        - build_final_result
 
     build_final_result:
       action: pipeline.run_job

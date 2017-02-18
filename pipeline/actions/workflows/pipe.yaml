@@ -27,7 +27,8 @@ pipeline.pipe:
             - <% str($.delay) %>
         mounts:
           - "type=bind,source=/vagrant/share,target=/share"
-      on-success: map
+      on-success:
+        - map
 
     map:
       with-items: i in <% list(range(1, 1 + $.parallels)) %>
@@ -36,7 +37,8 @@ pipeline.pipe:
       input:
         image: "alpine"
         args: ["sleep", <% str($.delay) %>]
-      on-success: reduce
+      on-success:
+        - reduce
 
     reduce:
       action: pipeline.run_job

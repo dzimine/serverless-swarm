@@ -28,7 +28,8 @@ pipeline.wordcount:
         cmd: mkdir -p <% $.workdir_host %> && cp <% $.input_file %> <% $.workdir_host %> && ls <% $.workdir_host %>
       publish:
         input_file_name: <% task(setup_working_directory).result.stdout %>
-      on-success: split
+      on-success:
+        - split
 
     split:
       action: pipeline.run_job
@@ -40,7 +41,8 @@ pipeline.wordcount:
             - <% $.share_docker %>/out
         mounts: <% $.mounts %>
         name: split
-      on-success: map
+      on-success:
+        - map
 
     map:
       with-items: i in <% list(range(1, 1 + $.parallels)) %>
@@ -58,14 +60,16 @@ pipeline.wordcount:
         # Play with this to simulate high load
         # reserve_cpu: 4
         # reserve_memory: 536870912
-      on-success: combine_map_results
+      on-success:
+        - combine_map_results
 
     combine_map_results:
       action: core.local_sudo
       input:
         cmd: cat out.map.* > map.out
         cwd: <% $.workdir_host %>
-      on-success: reduce
+      on-success:
+        - reduce
 
     reduce:
       action: pipeline.run_job
