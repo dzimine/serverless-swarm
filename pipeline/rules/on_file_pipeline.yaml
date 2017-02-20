@@ -1,0 +1,22 @@
+---
+name: on_file_pipeline
+pack: pipeline
+description: "Run findgenesb pipeline when input file is dropped to a directory."
+enabled: false
+
+trigger:
+    type: linux.file_watch.line
+    parameters: {}
+
+criteria:
+    trigger.file_path:
+        type: startswith
+        pattern: /tmp/findgenesb
+
+action:
+    ref: pipeline.findgenesb
+    parameters:
+        min_len: 150
+        input_file: "{{trigger.file_path}}"
+        result_filename: "{{trigger.file_name}}.result"
+        parallels: 4
