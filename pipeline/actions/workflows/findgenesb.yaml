@@ -48,6 +48,7 @@ pipeline.findgenesb:
             - "<% $.fgenesb_res_file %>"
             - <% str($.min_len) %>
         mounts: <% $.mounts %>
+        name: fgenesb
       on-success:
         - prepare_to_blast
 
@@ -66,6 +67,7 @@ pipeline.findgenesb:
               <% $.share_docker %>/<% $.tempfile_prefix %> <% $.parallels %> ;
               ls <% $.share_docker %>/<% $.tempfile_prefix %>*
         mounts: <% $.mounts %>
+        name: preblast
       on-success:
         - blast
 
@@ -83,6 +85,7 @@ pipeline.findgenesb:
           - "1e-10"
           - "2"
         mounts: <% $.mounts %>
+        name: blast
       on-success:
         - combine_blast_results
 
@@ -103,3 +106,20 @@ pipeline.findgenesb:
           - <% $.share_docker %>/<% $.tempfile_prefix %>.final
           - <% $.share_docker %>/<% $.result_filename %>
         mounts: <% $.mounts %>
+        name: preres
+      publish:
+        result_file: <% $.share_docker %>/<% $.result_filename %>
+      on-success:
+        - pretty_graphics_cgview
+
+    pretty_graphics_cgview:
+      action: pipeline.run_job
+      input:
+        image: st2.my.dev:5000/cgview
+        args:
+          - <% $.result_file %>
+          - <% $.result_filename %>
+          - <% $.share_docker %>
+        mounts: <% $.mounts %>
+        name: preres
+
