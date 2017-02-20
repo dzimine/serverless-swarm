@@ -16,6 +16,7 @@ pipeline.findgenesb:
     - min_len
     - database_path
     - result_filename
+    - email
     - share_host
     - share_docker
     - share_data_host
@@ -121,5 +122,15 @@ pipeline.findgenesb:
           - <% $.result_filename %>
           - <% $.share_docker %>
         mounts: <% $.mounts %>
-        name: preres
+        name: cgview
+      on-success:
+        - email_resutls: <% $.email != None %>
+
+    email_resutls:
+      action: core.sendmail
+      input:
+        to: <% $.email %>
+        subject: "Your annotated sequence findgenesb.<% env().st2_execution_id %>"
+        body: "Enjoy your annotated sequence. Love, Esty Tew."
+        attachments: <% $.workdir_host %>/<% $.result_filename %>.png,<% $.workdir_host %>/<% $.result_filename %>
 

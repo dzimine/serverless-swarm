@@ -12,7 +12,7 @@ parameters:
   min_len:
     type: integer
     description: Minimal sequence lenght.
-    required: true
+    default: 150
   database_path:
     type: string
     description: "BLAST database path, relative to DATA directory. Example: cog_db/cog.pro"
@@ -21,6 +21,10 @@ parameters:
     type: string
     description: Final result file name, find it in resutl dir.
     required: true
+  email:
+    type: string
+    description: Email address to return the results. Default hardcoded for testing.
+    default: "esteetew@gmail.com"
   share_host:
     type: string
     description: Path to shared storage on host (swarm worker node)
