@@ -10,7 +10,7 @@ At a minimum, this serves as a convenient and reliable playground for Docker Swa
 At best, this may involve into a solid Serverless framework.
 
 At the current state, it is an experimenting ground with working examples that
-produce food for though and more experimenting.
+produce food for thought and more experimenting.
 
 The sample functions and example wordcount map-reduce workflow are here with
 instructions of how to run them. The bioinformatic part contains some trade-
