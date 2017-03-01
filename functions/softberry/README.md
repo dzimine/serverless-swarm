@@ -1,12 +1,16 @@
 ## Running genomic pipeline with containers
 
 
-
 ### Get Softberry
 Softberry scripts and binaries are used in this pipeline. Download `softberry.tar.gz` from a secret location [^1]. Exctract `softberry.tar.gz`.
 
 * Put data in `../DATA` 
 * Put software in `./softberry` (this directory)
+* `blast` - basic (TODO: use opensource blast from dockerhub)
+* `sb_base` - base Softberry image
+* `fgenesb` - encapsulates FgenesB - finding genes, proteins and etc. 
+* `blast_fb` - runs blast computations (on multiple nodes)
+* `fgenesb_out` - processes (reduces) blast results and produces filan output.
 
 
 [^1]: Softberry software contains trade-secret algorithms and kept proprietary. If you
