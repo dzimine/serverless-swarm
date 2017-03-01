@@ -19,7 +19,7 @@ try:
  output_file = sys.argv[2]
  nspl= int(sys.argv[3])
 except:
-  print "USAGE: <genome fasta> <output file> <split num>"
+  print "USAGE: <seq fasta> <output file> <split num>"
   sys.exit()
 
 F = open(genome_file,'r')
@@ -27,11 +27,11 @@ num=0;
 for n,seq in read_fasta(F):
   num=num+1
 F.close()
-npa=int((1.*num)/nspl)
+npa=int((1.*num)/nspl); 
 ii=0; ic=1;
 F = open(genome_file,'r')
 for n,seq in read_fasta(F):
-  name_seq = n[1:]
+  name_seq = n[1:]; 
   name_seq = n
   lg = len(seq)
   if(ii==0): 
@@ -44,8 +44,8 @@ for n,seq in read_fasta(F):
     Fou.write("%s\n" %(seq[i1:i1+60]))
     i1=i1+60
   if(60*nn<lg):Fou.write("%s\n" %(seq[60*nn:lg]))
-  ii=ii+1
-  if(ii==npa and (num-(ic-1)*npa >= nspl)):
+  ii=ii+1; 
+  if(ii==npa and ic<=nspl):
    ii=0; Fou.close() 
 if(nspl*npa<num):Fou.close()
 F.close()
