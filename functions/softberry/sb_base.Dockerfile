@@ -1,13 +1,14 @@
 FROM sb/blast
 
 RUN yum install -y perl
-ADD FgenesB /sb/FgenesB
-ADD tRNAscan-SE /sb/tRNAscan-SE
-ADD blast_scripts /sb/blast_scripts
 
-ADD path.list /sb
-ADD test.seq  /sb
-ADD extra /sb/extra
+COPY FgenesB /sb/FgenesB
+COPY tRNAscan-SE /sb/tRNAscan-SE
+COPY blast_scripts /sb/blast_scripts
+
+COPY path.list /sb
+COPY test.seq  /sb
+COPY extra /sb/extra
 
 WORKDIR /sb
 

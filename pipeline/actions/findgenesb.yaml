@@ -24,7 +24,6 @@ parameters:
   email:
     type: string
     description: Email address to return the results. Default hardcoded for testing.
-    default: "esteetew@gmail.com"
   share_host:
     type: string
     description: Path to shared storage on host (swarm worker node)

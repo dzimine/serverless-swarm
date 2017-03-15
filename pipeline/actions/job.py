@@ -5,40 +5,6 @@ import time
 import docker
 
 
-def _parse_mount_string(string):
-    mount_kwargs = {}
-    try:
-        fields = string.split(',')
-        for field in fields:
-            pair = field.split('=', 1)
-            key = pair[0]
-
-            if len(pair) == 1:
-                if key in ['readonly', 'ro']:
-                    mount_kwargs['read_only'] = True
-                elif key == 'volume-nocopy':
-                    mount_kwargs['no_copy'] = True
-                continue
-
-            val = pair[1]
-            if key in ['target', 'dst', 'destination']:
-                target = val
-            elif key in ['source', 'src']:
-                source = val
-            elif key in ['readonly, ro']:
-                mount_kwargs['read_only'] = val
-            elif key in ['type', 'propagation']:
-                mount_kwargs[key] = val
-            elif key == 'volume-label':
-                k, v = val.strip("\"\'").split('=')
-                mount_kwargs.setdefault('labels', {}).update({k: v})
-
-    except Exception as e:
-        raise SyntaxError("Invalid mount format {0}\n{1}".format(string, e))
-
-    return docker.types.Mount(target, source, **mount_kwargs)
-
-
 class RunJobAction(Action):
 
     def __init__(self, config):
@@ -84,6 +50,7 @@ class RunJobAction(Action):
                 self.logger.debug("Job %s task %s: %s", job['ID'], task['ID'], state)
 
                 if state in ('failed', 'rejected'):
+                    # TODO: get logs, waiting for docker-py/pull/1446
                     self.logger.error("Job %s: %s", state, status['Err'])
                     return (False, status['Err'])
 
@@ -105,3 +72,37 @@ class RunJobAction(Action):
         }
 
         return (True, res)
+
+
+def _parse_mount_string(string):
+    mount_kwargs = {}
+    try:
+        fields = string.split(',')
+        for field in fields:
+            pair = field.split('=', 1)
+            key = pair[0]
+
+            if len(pair) == 1:
+                if key in ['readonly', 'ro']:
+                    mount_kwargs['read_only'] = True
+                elif key == 'volume-nocopy':
+                    mount_kwargs['no_copy'] = True
+                continue
+
+            val = pair[1]
+            if key in ['target', 'dst', 'destination']:
+                target = val
+            elif key in ['source', 'src']:
+                source = val
+            elif key in ['readonly, ro']:
+                mount_kwargs['read_only'] = val
+            elif key in ['type', 'propagation']:
+                mount_kwargs[key] = val
+            elif key == 'volume-label':
+                k, v = val.strip("\"\'").split('=')
+                mount_kwargs.setdefault('labels', {}).update({k: v})
+
+    except Exception as e:
+        raise SyntaxError("Invalid mount format {0}\n{1}".format(string, e))
+
+    return docker.types.Mount(target, source, **mount_kwargs)
