@@ -45,6 +45,13 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
           # Use faster paravirtualized networking
           # vbox.customize ["modifyvm", :id, "--nictype1", "virtio"]
           # vbox.customize ["modifyvm", :id, "--nictype2", "virtio"]
+
+        box.vm.synced_folder ".", "/vagrant", disabled: true
+        box.vm.synced_folder ".", "/faas/",
+          id: "vagrant-faas",
+          owner: "root",
+          group: "1007"
+          # When needed, use `groupadd -g 1007 st2packs`
         end
       end
     end
