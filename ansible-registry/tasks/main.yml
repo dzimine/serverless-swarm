@@ -24,23 +24,19 @@
       pull: false
       restart_policy: always
     register: start_registry
-    when: "'docker_registry' in group_names"
-    # become: true
-
-  - name: Declare the address of the first Registry as a fact
-    set_fact:
-      docker_registry_address: "{{ registry_host }}:{{ registry_port }}"
     when: "inventory_hostname == groups['docker_registry'][0]"
+    become: true
 
-  - name: Distribute the fact containing address of the first Registry
-    set_fact:
-      docker_registry_address: "{{hostvars[groups['docker_registry'][0]]['docker_registry_address'] }}"
-    when: "inventory_hostname != groups['docker_registry'][0]"
+  - name: Entry registry_name shortcut in /etc/hosts
+    lineinfile:
+      dest: "/etc/hosts"
+      line: "{{ registry_addr }}  {{ registry_name }}"
+    become: true
 
   - name: Copy certificates to the client nodes
-    copy: 
+    copy:
       src: "{{local_cert_path}}/{{cert_name}}.crt"
-      dest: "/etc/docker/certs.d/{{ docker_registry_address }}/"
+      dest: "/etc/docker/certs.d/{{ registry_name }}:{{ registry_port}}/"
     become: true
 
 

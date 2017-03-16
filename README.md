@@ -110,11 +110,13 @@ Registry.
     ansible-playbook playbook-swarm.yml -vv -i inventory.my.dev
     ```
 2. Set up the [local Docker Registry](https://docs.docker.com/registry/deploying/)
-    to host private docker images:
+    to host private docker images. 
 
     ```
     ansible-playbook playbook-registry.yml -vv -i inventory.my.dev
     ```
+    Private registry is referred as `pregistry:5000`; it is set in
+    `/etc/hosts` for consistency between Vagrant dev environment and AWS.
 3. Add [Swarm visualizer](https://github.com/ManoMarks/docker-swarm-visualizer)
     for a nice eye-candy. Run this command on Swarm master.
 
@@ -190,19 +192,21 @@ Login to a VM. Any node would do as docker is installed on all.
 2. Push the function to local docker registry:
 
     ```
-    docker tag encode st2.my.dev:5000/encode
-    docker push st2.my.dev:5000/encode
+    docker tag encode pregistry:5000/encode
+    docker push pregistry:5000/encode
 
     # Inspect the repository
-    curl --cacert /etc/docker/certs.d/st2.my.dev\:5000/registry.crt https://st2.my.dev:5000/v2/_catalog
-    curl --cacert /etc/docker/certs.d/st2.my.dev\:5000/registry.crt -X GET https://st2.my.dev:5000/v2/encode/tags/list
+    curl --cacert /etc/docker/certs.d/pregistry\:5000/registry.crt https://pregistry:5000/v2/_catalog
+    curl --cacert /etc/docker/certs.d/pregistry\:5000/registry.crt -X GET https://pregistry:5000/v2/encode/tags/list
     ```
+    >
+    Note: Registry alias is set as `pregistry:5000` for brievity and consistency across Vagrand dev and AWS production environments.
 
 4. Run the function:
 
     ```
     docker run --rm -v /vagrant/share:/share \
-    st2.my.dev:5000/encode -i /share/li.txt -o /share/li.out --delay 1
+    pregistry:5000/encode -i /share/li.txt -o /share/li.out --delay 1
     ```
     Reminders:
 
@@ -221,7 +225,7 @@ Run the job with swarm command-line:
 ```
 docker service create --name job2 \
 --mount type=bind,source=/vagrant/share,destination=/share \
---restart-condition none st2.my.dev:5000/encode \
+--restart-condition none pregistry:5000/encode \
 -i /share/li.txt -o /share/li.out --delay 20
 ```
 
@@ -234,7 +238,7 @@ Run the job via stackstorm:
 
 ```
 st2 run -a pipeline.run_job \
-image=st2.my.dev:5000/encode \
+image=pregistry:5000/encode \
 mounts='["type=bind,source=/vagrant/share,target=/share"]' \
 args="-i","/share/li.txt","-o","/share/test.out","--delay",3
 ```

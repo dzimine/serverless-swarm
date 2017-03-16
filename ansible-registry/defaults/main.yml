@@ -4,8 +4,14 @@ local_cert_path:  "{{playbook_dir}}/certs"
 remote_cert_path: "/root/docker/certs/"
 cert_name: "registry"
 # Path to registry persistant storage on Registry docker host.
-host_registry_path: "/vagrant/registry"
-# Docker registry host FQDN
-registry_host: "{{ ansible_fqdn }}"
-# Docker registry port 
+host_registry_path: "/opt/registry"
+# Registry networking setup (results in something like eth1)
+registry_interface: "{{ ansible_default_ipv4['alias'] }}"
+# Registry IP address
+# Instead of {{ ansible_default_ipv4['alias'] }} you can set any interface, that is listened by registry.
+# docker_swarm_interface: "eth1"
+registry_addr: "{{ hostvars[inventory_hostname]['ansible_' + registry_interface]['ipv4']['address'] }}"
+# Registry name alias.
+registry_name: "pregistry"
+# Docker registry port
 registry_port: '5000'

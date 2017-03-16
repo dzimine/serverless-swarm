@@ -3,6 +3,9 @@
 - name: "Provision Local Docker Registry"
   hosts: all
   vars:
-    host_registry_path: "/vagrant/registry"
+    host_registry_path: "/faas/registry"
+    # For Vagrant, uncomment the line
+    registry_interface: "eth1"
+
   roles:
     - role: ansible-registry

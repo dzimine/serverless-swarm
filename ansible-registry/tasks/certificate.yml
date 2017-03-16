@@ -6,14 +6,14 @@
     register: local_certificate
 
   - name: Generate server key and certificate
-    local_action: shell /bin/bash --login -c 'openssl req -new -nodes -x509 -subj "/C=/ST=/L=/O=/CN={{registry_host}}" -days 3650 -keyout {{local_cert_path}}/{{cert_name}}.key -out {{local_cert_path}}/{{cert_name}}.crt -extensions v3_ca'
+    local_action: shell /bin/bash --login -c 'openssl req -new -nodes -x509 -subj "/C=/ST=/L=/O=/CN={{registry_name}}" -days 3650 -keyout {{local_cert_path}}/{{cert_name}}.key -out {{local_cert_path}}/{{cert_name}}.crt -extensions v3_ca'
     when: not local_certificate.stat.exists
 
   - name: Copy server key and certificate to Registry host
-    copy: 
+    copy:
       src: "{{local_cert_path}}/{{item}}"
       dest: "{{remote_cert_path}}"
     with_items:
       - "{{cert_name}}.key"
       - "{{cert_name}}.crt"
-    # become: true
+    become: true
