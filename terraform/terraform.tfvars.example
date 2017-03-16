@@ -1,0 +1,5 @@
+aws_access_key = "XXXXXXXXXXXXXXXXXXXX"
+aws_secret_key = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+key_name = "key"
+key_path = "~/.ssh/key.pem"
+aws_region = "us-west-1"
