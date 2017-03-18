@@ -21,6 +21,7 @@ data "template_cloudinit_config" "config" {
 }
 
 resource "aws_instance" "worker" {
+  count = "${var.n_workers}"
   ami = "${var.ami}"
   instance_type = "${var.instance_type_worker}"
   key_name = "${var.key_name}"
@@ -40,12 +41,13 @@ resource "aws_instance" "worker" {
   user_data = "${data.template_cloudinit_config.config.rendered}"
 }
 
-resource "aws_route53_record" "node1" {
+resource "aws_route53_record" "node" {
+  count = "${var.n_workers}"
   zone_id = "ZV08YC45J234P"
-  name = "node1"
+  name = "node${var.n_workers}"
   type = "CNAME"
   ttl = 60
-  records = ["${aws_instance.worker.public_dns}"]
+  records = ["${element(aws_instance.worker.*.public_dns, count.index)}"]
 }
 
 resource "aws_instance" "manager" {
@@ -78,7 +80,7 @@ resource "aws_route53_record" "st2" {
 }
 
 output "worker_public_ip" {
-  value = "${aws_instance.worker.public_ip}"
+  value = "${join(",",aws_instance.worker.*.public_ip)}"
 }
 output "manager_public_ip" {
   value = "${aws_instance.manager.public_ip}"
