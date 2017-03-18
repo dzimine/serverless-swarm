@@ -16,7 +16,7 @@ parameters:
   share_host:
     type: string
     description: Path to shared storage on host (swarm worker node)
-    default: /vagrant/share
+    default: /share
   share_docker:
     type: string
     description: Path to shared storage in docker container
