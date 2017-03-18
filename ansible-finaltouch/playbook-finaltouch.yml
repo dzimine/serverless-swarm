@@ -1,0 +1,6 @@
+---
+
+- name: "Final touches to installation"
+  hosts: all
+  roles:
+    - role: ansible-finaltouch

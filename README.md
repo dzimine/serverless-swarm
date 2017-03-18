@@ -152,7 +152,7 @@ ansible-playbook playbook-st2.yml -vv -i inventory.my.dev
 Install `pipeline` pack. A hackish way is to symlink it in place, for development:
 
 ```
-ln -s /vagrant/pipeline/ /opt/stackstorm/packs/
+ln -s /faas/pipeline/ /opt/stackstorm/packs/
 st2 run packs.setup_virtualenv packs=pipeline
 st2ctl reload
 ```

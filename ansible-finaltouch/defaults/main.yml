@@ -1,0 +1,10 @@
+---
+# Target env: `vagrant` or `aws`
+target:  "vagrant"
+# The root
+faas_root_dir: "/faas"
+# Branch, or version SHA of the repository
+github_repo_version: "DZ/refactor_aws"
+data_dir: "/data"
+share_dir: "/share"
+

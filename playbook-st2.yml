@@ -12,7 +12,7 @@
     - rabbitmq
     - postgresql
     - st2repos
-    - st2
+    - {name: st2, tags: st2}
     - st2mistral
     - nginx
     - st2web

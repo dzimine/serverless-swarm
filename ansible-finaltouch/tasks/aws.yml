@@ -1,0 +1,20 @@
+---
+
+- name: Sym-link data EBS to /data
+  file:
+    src: "/mnt/data/DATA"
+    dest: "/data"
+    state: link
+
+- name: Sym-link share EFS to /share
+  file:
+    src: "/mnt/share/share"
+    dest: "/share"
+    state: link
+
+- name: Clone serverless-swarm repo from github
+  git:
+    repo: https://github.com/dzimine/serverless-swarm.git
+    version: "{{ github_repo_version }}"
+    dest: "{{ faas_root_dir }}"
+  when: "'docker_swarm_manager' in group_names"

@@ -1,0 +1,7 @@
+---
+
+- include: aws.yml
+  when: "target == 'aws'"
+
+- include: manager.yml
+  when: "'docker_swarm_manager' in group_names"
