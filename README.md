@@ -25,7 +25,8 @@ swarm/issues).
 
 # Deploying Serverless Swarm, from 0 to 5.
 
-Follow these step-by-step instructions to set up Docker Swarm, configure the rest of framework parts, and run a sample serverless pipeline.
+Follow these step-by-step instructions to set up Docker Swarm, configure the rest of framework parts, and run a sample serverless pipeline. All you need to get a swarm cluster running **conviniently**, per [Swarm
+tutorial](https://docs.docker.com/engine/swarm/swarm-tutorial/).
 
 ## Clone the repo
 This repo uses submodules, remember to use `recursive` when cloning:
@@ -38,13 +39,13 @@ If you have have already cloned the repo without `--recursive`, just do:
 cd serverless-swarm
 git submodule update --init --recursive
 ```
-## Setting Up
-
-All you need to get a swarm cluster running **conviniently**, per [Swarm
-tutorial](https://docs.docker.com/engine/swarm/swarm-tutorial/).
-
-### 1. Provision machines (with Vagrant)
-First we need to provision machines where Swarm will be deployed. I'll use thee boxes:
+## Setup
+Vagrant is used to create a local dev environment representative of a production one. Ansible is used to deploy software. Convinience
+tricks inspired by [6 practices for super smooth Ansible
+experience](http://hakunin.com/six-ansible-practices). Default config will set 3 boxes,
+named `st2.my.dev`, `node1.my.dev`, and `node2.my.dev`, with ssh access
+configured for root. Roles are described as code in [`inventory.my.dev`](./inventory.my.dev) for local Vagrant setup, and in [inventory.aws](./inventory.aws) for AWS deployment. 
+Dah, this proto setup is for play, not for production.
 
 | Host          | Role            |
 |---------------|-----------------|
@@ -52,22 +53,20 @@ First we need to provision machines where Swarm will be deployed. I'll use thee 
 | node1.my.dev  | Swarm worker    |
 | node2.my.dev  | Swarm worker    |
 
-Roles are described as code in [`inventory.my.dev`]() file. Dah, this proto
-setup is for play, not for production.
+Instructions:
 
+1. Install Vagrant with VirtualBox, Ansible, and Terraform.
 
-#### 1.1 Setup host machine
-Vagrant is used to create a local dev environment representative of a production one, with convinience
-tricks inspired by [6 practices for super smooth Ansible
-experience](http://hakunin.com/six-ansible-practices). This will set 3 boxes,
-named `st2.my.dev`, `node1.my.dev`, and `node2.my.dev`, with ssh access
-configured for root.
+2. Install [vagrant-hostmanager](https://github.com/devopsgroup-io/vagrant-hostmanager):
+    ```
+    vagrant plugin install vagrant-hostmanager
+    ```
 
-1. Generate  a pair of SSH keys:  `~/.ssh/id_rsa`, `~/.ssh/id_rsa.pub` (to
+3. Generate  a pair of SSH keys:  `~/.ssh/id_rsa`, `~/.ssh/id_rsa.pub` (to
 use different keys, update the call to `authorize_key_for_root` in
 `Vagrantfile` accordingly).
 
-2. Configure ssh client like this `~/.ssh/config`:
+4. Configure ssh client like this `~/.ssh/config`:
 
     ```
     # ~/.ssh/config
@@ -80,91 +79,38 @@ use different keys, update the call to `authorize_key_for_root` in
        LogLevel ERROR
     ```
 
-3. Install [vagrant-hostmanager](https://github.com/devopsgroup-io/vagrant-hostmanager):
-    ```
-    vagrant plugin install vagrant-hostmanager
-    ```
-
-#### 1.2 Vagrant up
+## Run
+#### 1 Vagrant up
 
 Run `vagrant up`. You will need to type in the password to let Vagrant
 update `/etc/hosts/`.
 
 Profit! Log in as a root with `ssh st2.my.dev`, `ssh node1.my.dev`, and
-`ssh node2.my.dev`. Check that the VMs' `/vagrant/` mount works: `ls /vagrant`.
+`ssh node2.my.dev`. Check that the VMs' mounts works: `ls /faas`, `ls /data`,
+`ls /share`.
 
 Troubles: Due to [hostmanager bugs](https://github.com/devopsgroup-io/vagrant-
 hostmanager/issues/159), `/etc/hosts` on the host machine may not be cleaned
 up. Clean it up by hands.
 
+#### 2. Deploy Software
 
-### 2. Deploy Swarm cluster
-Ok, machines are set up. Let deploy a 3-node Swarm cluster.
-I use [ansible-dockerswarm](https://github.com/atosatto/ansible-dockerswarm) from
-[@atosatto](https://github.com/atosatto) and my own addition to set up the local
-Registry.
-
-1. Create Swarm cluster:
-
-    ```
-    ansible-playbook playbook-swarm.yml -vv -i inventory.my.dev
-    ```
-2. Set up the [local Docker Registry](https://docs.docker.com/registry/deploying/)
-    to host private docker images. 
-
-    ```
-    ansible-playbook playbook-registry.yml -vv -i inventory.my.dev
-    ```
-    Private registry is referred as `pregistry:5000`; it is set in
-    `/etc/hosts` for consistency between Vagrant dev environment and AWS.
-3. Add [Swarm visualizer](https://github.com/ManoMarks/docker-swarm-visualizer)
-    for a nice eye-candy. Run this command on Swarm master.
-
-    ```
-    # ATTENTION!
-    # Run this on Swarm master, st2.my.dev
-
-    docker service create \
-    --name=viz \
-    --publish=8080:8080/tcp \
-    --constraint=node.role==manager \
-    --mount=type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock \
-    manomarks/visualizer
-    ```
-
-    Wait for the service to start - here's a helper script:
-
-    ```
-    ./scripts/waitforservice.sh visualizer
-    ```
-
-    Connect to Visualizer via [http://st2.my.dev:8080](http://st2.my.dev:8080)
-    and see this one server there.
-
-
-### 3. Install StackStorm:
-
-```sh
-ansible-playbook playbook-st2.yml -vv -i inventory.my.dev
+This ansible playbook will create Swarm Cluster, deploy and configure local private Registry at `pregistry:5000`, install StackStorm, and do other final config touches, like setting up st2 packs and getting vizualizer at [http://st2.my.dev:8080](http://st2.my.dev:8080). At successful run of the command,
+you'll have a functional Swarm Cluster, StackStorm, and serverless pipelines
+ready to go.
 
 ```
-
-Install `pipeline` pack. A hackish way is to symlink it in place, for development:
-
-```
-ln -s /faas/pipeline/ /opt/stackstorm/packs/
-st2 run packs.setup_virtualenv packs=pipeline
-st2ctl reload
+ansible-playbook playbook-all.yml -vv -i inventory.my.dev 
 ```
 
 Check the action is in place: run `st2 action list --pack=pipeline` and verify
 that it returned some actions.
 
+    TODO: add commands to validate the setup
+    
 **Pat yourself on a back, infra is done!** We got three nodes with docker,
 running as Swarm, with local Registry, and StackStorm to rule them all.
 
-### 4. Deploy on AWS with Terraform
-Coming up...
 
 ## Play time!
 
@@ -177,7 +123,7 @@ may want to skip it and jump right to [Wordcount Map-Reduce Example
 
 The apps, or "functions" are placed in (drum-rolls...) `./functions`.
 By the virtue of default Vagrant share, it is available inside
-all VMs at `/vagrant/functions`.
+all VMs at `/faas/functions`.
 
 Login to a VM. Any node would do as docker is installed on all.
 
@@ -200,7 +146,7 @@ Login to a VM. Any node would do as docker is installed on all.
     curl --cacert /etc/docker/certs.d/pregistry\:5000/registry.crt -X GET https://pregistry:5000/v2/encode/tags/list
     ```
     >
-    Note: Registry alias is set as `pregistry:5000` for brievity and consistency across Vagrand dev and AWS production environments.
+    Note: Registry alias is set as `pregistry:5000` in `/etc/hosts` for brievity and consistency across Vagrand dev and AWS production environments.
 
 4. Run the function:
 
