@@ -1,6 +1,11 @@
-node1    ansible_ssh_host=node1.my.dev  ansible_user=root
-node2    ansible_ssh_host=node2.my.dev  ansible_user=root
-st2      ansible_ssh_host=st2.my.dev    ansible_user=root
+[targets]
+node1    ansible_ssh_host=node1.my.dev
+node2    ansible_ssh_host=node2.my.dev
+st2      ansible_ssh_host=st2.my.dev
+
+[targets:vars]
+ansible_user=root
+target=vagrant
 
 [docker_engine]
 node1

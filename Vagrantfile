@@ -47,7 +47,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
           # vbox.customize ["modifyvm", :id, "--nictype2", "virtio"]
 
         box.vm.synced_folder ".", "/vagrant", disabled: true
-        box.vm.synced_folder ".", "/faas/",
+        box.vm.synced_folder "./data", "/data", type: "nfs"
+        box.vm.synced_folder "./share", "/share", type: "nfs"
+        box.vm.synced_folder ".", "/faas",
           id: "vagrant-faas",
           owner: "root",
           group: "1007"

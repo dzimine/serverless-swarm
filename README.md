@@ -205,14 +205,14 @@ Login to a VM. Any node would do as docker is installed on all.
 4. Run the function:
 
     ```
-    docker run --rm -v /vagrant/share:/share \
+    docker run --rm -v /share:/share \
     pregistry:5000/encode -i /share/li.txt -o /share/li.out --delay 1
     ```
     Reminders:
 
     * `--rm` to remove container once it exits.
-    * `-v` maps `/vagrant/share` of Vagrant VM to `/share` inside the container.
-      This acts as a shared storage across Swarm VMs as `/vagrant/share` maps to the host machine.
+    * `-v` maps `/share` of Vagrant VM to `/share` inside the container.
+      This acts as a shared storage across Swarm VMs as `/share` maps to the host machine.
       On AWS we need to figure good shared storage alternative.
     * `-i`, `-o`, `--delay` are function parameters.
 
@@ -224,7 +224,7 @@ Run the job with swarm command-line:
 
 ```
 docker service create --name job2 \
---mount type=bind,source=/vagrant/share,destination=/share \
+--mount type=bind,source=/share,destination=/share \
 --restart-condition none pregistry:5000/encode \
 -i /share/li.txt -o /share/li.out --delay 20
 ```
@@ -239,7 +239,7 @@ Run the job via stackstorm:
 ```
 st2 run -a pipeline.run_job \
 image=pregistry:5000/encode \
-mounts='["type=bind,source=/vagrant/share,target=/share"]' \
+mounts='["type=bind,source=/share,target=/share"]' \
 args="-i","/share/li.txt","-o","/share/test.out","--delay",3
 ```
 
@@ -279,7 +279,7 @@ Run the workflow:
 
 ```
 st2 run -a pipeline.wordcount \
-input_file=/vagrant/share/loremipsum.txt result_filename=loremipsum.res \
+input_file=/share/loremipsum.txt result_filename=loremipsum.res \
 parallels=8 delay=10
 ```
 
@@ -290,32 +290,3 @@ For details, see [functions/wordcount/README.md](functions/wordcount/README.md) 
 inspect the code, docker containers, and pipeline workflow at
 [pipeline/actions/wordcout.yaml](pipeline/actions/wordcout.yaml).
 
-## Miscelenious Topics
-* To run a parallel setup on the same dev box:
-    * Pick a different domain and IP range, e.g. `*.dev.net`, `192.168.88.*`):
-    * Clone another copy of serverless-swarm
-    * Add a new section to the `~/.ssh/config`:
-
-        ```
-        Host 192.168.88.* *.dev.net
-        StrictHostKeyChecking no
-        UserKnownHostsFile=/dev/null
-        User root
-        LogLevel ERROR
-        ```
-    * Update domain in host names in the [`inventory.dev.net`](./inventory.dev.net) file:
-
-        ```
-        # inventory
-        node1    ansible_ssh_host=node1.dev.net  ansible_user=root
-        node2    ansible_ssh_host=node2.dev.net  ansible_user=root
-        st2      ansible_ssh_host=st2.dev.net    ansible_user=root
-        ...
-        ```
-    * Run vagrant passing the domain and IP range as enviromnemt variable:
-    ```
-    IP_BASE=192.168.88 DOMAIN=dev.net vagrant up
-    ```
-    * Proceed with the rest using `inventory.dev.net` instead.
-    * Or, `just_freaking_do_it`. It will run Vagrant and all the
-      Ansible playbooks.

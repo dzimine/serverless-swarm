@@ -5,6 +5,7 @@
     # For Vagrant, use `eth1`. For AWS use default `eth0`.
     # CLI: `--extra-vars "docker_swarm_interface=eth1`
     # docker_swarm_interface: "eth1"
+    docker_swarm_interface: "{{ 'eth1' if target=='vagrant' else 'eth0' }}"
     skip_docker_py: False
     skip_group: True
   roles:
@@ -17,6 +18,7 @@
     # CLI: `--extra-vars "docker_swarm_interface=eth1`
     # docker_swarm_interface: "eth1"
     # registry_interface: "eth1"
+    registry_interface: "{{ 'eth1' if target=='vagrant' else 'eth0' }}"
 
   roles:
     - role: ansible-registry
@@ -43,7 +45,7 @@
 - name: "Final touches"
   hosts: all
   vars:
-    # For vagrant, use `vagrant`. For AWS, use `aws`
-    target: aws
+    # target: For vagrant, use `vagrant`. For AWS, use `aws`
+    # In this playbook, `target` var is devined by inventory.
   roles:
     - role: ansible-finaltouch
