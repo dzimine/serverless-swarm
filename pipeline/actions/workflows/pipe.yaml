@@ -9,6 +9,7 @@ pipeline.pipe:
     - input_file
     - output_file
     - parallels
+    - registry
     - delay
 
   output:
@@ -17,7 +18,7 @@ pipeline.pipe:
     encode:
       action: pipeline.run_job
       input:
-        image: "st2.my.dev:5000/encode"
+        image: "<% $.registry %>/encode"
         args:
             - "-i"
             - "<% $.input_file %>"
@@ -26,13 +27,13 @@ pipeline.pipe:
             - "--delay"
             - <% str($.delay) %>
         mounts:
-          - "type=bind,source=/vagrant/share,target=/share"
+          - "type=bind,source=/share,target=/share"
       on-success:
         - map
 
     map:
       with-items: i in <% list(range(1, 1 + $.parallels)) %>
-      # concurrency: 4
+      concurrency: 4
       action: pipeline.run_job
       input:
         image: "alpine"
@@ -43,7 +44,7 @@ pipeline.pipe:
     reduce:
       action: pipeline.run_job
       input:
-        image: "st2.my.dev:5000/encode"
+        image: "<% $.registry %>/encode"
         args: ["-i", <% $.tempfile %>, "-o", <% $.output_file %>, "--delay", <% str($.delay) %>]
         mounts:
-          - "type=bind,source=/vagrant/share,target=/share"
+          - "type=bind,source=/share,target=/share"
