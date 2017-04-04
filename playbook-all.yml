@@ -47,5 +47,7 @@
   vars:
     # target: For vagrant, use `vagrant`. For AWS, use `aws`
     # In this playbook, `target` var is devined by inventory.
+
+    github_repo_version: master
   roles:
     - role: ansible-finaltouch

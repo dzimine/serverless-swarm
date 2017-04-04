@@ -3,8 +3,8 @@
 target:  "vagrant"
 # The root
 faas_root_dir: "/faas"
-# Branch, or version SHA of the repository
-github_repo_version: "DZ/refactor_aws"
+# Branch, or version SHA of the faas repository
+github_repo_version: "master"
 data_dir: "/data"
 share_dir: "/share"
 
