@@ -44,7 +44,7 @@ Vagrant is used to create a local dev environment representative of a production
 tricks inspired by [6 practices for super smooth Ansible
 experience](http://hakunin.com/six-ansible-practices). Default config will set 3 boxes,
 named `st2.my.dev`, `node1.my.dev`, and `node2.my.dev`, with ssh access
-configured for root. Roles are described as code in [`inventory.my.dev`](./inventory.my.dev) for local Vagrant setup, and in [inventory.aws](./inventory.aws) for AWS deployment. 
+configured for root. Roles are described as code in [`inventory.my.dev`](./inventory.my.dev) for local Vagrant setup, and in [inventory.aws](./inventory.aws) for AWS deployment.
 Dah, this proto setup is for play, not for production.
 
 | Host          | Role            |
@@ -100,16 +100,21 @@ you'll have a functional Swarm Cluster, StackStorm, and serverless pipelines
 ready to go.
 
 ```
-ansible-playbook playbook-all.yml -vv -i inventory.my.dev 
+ansible-playbook playbook-all.yml -vv -i inventory.my.dev
 ```
 
 Check the action is in place: run `st2 action list --pack=pipeline` and verify
 that it returned some actions.
 
     TODO: add commands to validate the setup
-    
+
 **Pat yourself on a back, infra is done!** We got three nodes with docker,
 running as Swarm, with local Registry, and StackStorm to rule them all.
+
+* StackStorm [https://st2.my.dev](https://st2.my.dev) on local dev setup.
+* Swarm vizualizer [http://st2.my.dev:8080](http://st2.my.dev:8080) on local dev setup.
+
+
 
 
 ## Play time!
