@@ -13,6 +13,7 @@ pipeline.wordcount:
     - share_host
     - share_docker
     - parallels
+    - registry
     - delay
 
   task-defaults:
@@ -34,7 +35,7 @@ pipeline.wordcount:
     split:
       action: pipeline.run_job
       input:
-        image: st2.my.dev:5000/split
+        image: <% $.registry %>/split
         args:
             - "<% $.share_docker %>/<% $.input_file_name %>"
             - "<% $.parallels %>"
@@ -50,7 +51,7 @@ pipeline.wordcount:
       # concurrency: 4
       action: pipeline.run_job
       input:
-        image: st2.my.dev:5000/map
+        image: <% $.registry %>/map
         args:
           - "<% $.share_docker %>/out.<% $.i %>"
           - "<% $.share_docker %>/out.map.<% $.i %>"
@@ -74,7 +75,7 @@ pipeline.wordcount:
     reduce:
       action: pipeline.run_job
       input:
-        image: st2.my.dev:5000/reduce
+        image: <% $.registry %>/reduce
         args:
           - <% $.share_docker %>/map.out
           - <% $.share_docker %>/<% $.result_filename %>

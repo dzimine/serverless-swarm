@@ -1,0 +1,53 @@
+---
+- name: "Provision Docker Swarm Cluster"
+  hosts: all
+  vars:
+    # For Vagrant, use `eth1`. For AWS use default `eth0`.
+    # CLI: `--extra-vars "docker_swarm_interface=eth1`
+    # docker_swarm_interface: "eth1"
+    docker_swarm_interface: "{{ 'eth1' if target=='vagrant' else 'eth0' }}"
+    skip_docker_py: False
+    skip_group: True
+  roles:
+    - role: ansible-dockerswarm
+
+- name: "Provision Local Docker Registry"
+  hosts: all
+  vars:
+    # For Vagrant, use `eth1`. For AWS use default `eth0`.
+    # CLI: `--extra-vars "docker_swarm_interface=eth1`
+    # docker_swarm_interface: "eth1"
+    # registry_interface: "eth1"
+    registry_interface: "{{ 'eth1' if target=='vagrant' else 'eth0' }}"
+
+  roles:
+    - role: ansible-registry
+
+- name: Install StackStorm
+  hosts: st2
+  strategy: debug
+  vars:
+    st2_pkg_repo: staging-unstable
+    st2_auth_username: st2admin
+    st2_auth_password: st2pass
+
+  roles:
+    - mongodb
+    - rabbitmq
+    - postgresql
+    - st2repos
+    - {name: st2, tags: st2}
+    - st2mistral
+    - nginx
+    - st2web
+    - st2smoketests
+
+- name: "Final touches"
+  hosts: all
+  vars:
+    # target: For vagrant, use `vagrant`. For AWS, use `aws`
+    # In this playbook, `target` var is devined by inventory.
+
+    github_repo_version: master
+  roles:
+    - role: ansible-finaltouch

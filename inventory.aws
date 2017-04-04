@@ -1,12 +1,10 @@
 [targets]
-node1    ansible_ssh_host=node1.my.aws
-node2    ansible_ssh_host=node2.my.aws
-st2      ansible_ssh_host=st2.my.aws
+node1    ansible_ssh_host=node1.zimine.net
+st2      ansible_ssh_host=st2.zimine.net
 
 [targets:vars]
 ansible_user=root
-# Use ansible-play `--key-file` to supply your key
-ansible_ssh_private_key_file=~/.ssh/your_aws_private_key.pem
+target=aws
 
 [docker_engine]
 node1

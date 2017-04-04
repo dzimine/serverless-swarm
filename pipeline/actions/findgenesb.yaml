@@ -27,7 +27,7 @@ parameters:
   share_host:
     type: string
     description: Path to shared storage on host (swarm worker node)
-    default: /vagrant/share
+    default: /share
   share_docker:
     type: string
     description: Path to shared storage in docker container
@@ -35,7 +35,7 @@ parameters:
   share_data_host:
     type: string
     description: Path to DATA readonly storage on host (swarm worker node)
-    default: /vagrant/DATA
+    default: /data
   share_data_docker:
     type: string
     description: Path to DATA readonly storage in docker container
@@ -44,6 +44,10 @@ parameters:
     type: integer
     description: Number of parallel executions for "blast" task
     default: 2
+  registry:
+    type: string
+    description: Private docker registry
+    default: "pregistry:5000"
   delay:
     type: integer
     description: Delay to simulate long running process

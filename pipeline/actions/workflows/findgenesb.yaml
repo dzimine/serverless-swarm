@@ -22,6 +22,7 @@ pipeline.findgenesb:
     - share_data_host
     - share_data_docker
     - parallels
+    - registry
     - delay
 
   task-defaults:
@@ -37,13 +38,14 @@ pipeline.findgenesb:
         cmd: mkdir -p <% $.workdir_host %> && cp <% $.input_file %> <% $.workdir_host %> && ls <% $.workdir_host %>
       publish:
         input_file_name: <% task(setup_working_directory).result.stdout %>
+        email_address: <% $.email %>
       on-success:
         - find_genes_proteins_and_etc
 
     find_genes_proteins_and_etc:
       action: pipeline.run_job
       input:
-        image: st2.my.dev:5000/fgenesb
+        image: <% $.registry %>/fgenesb
         args:
             - "<% $.share_docker %>/<% $.input_file_name %>"
             - "<% $.fgenesb_res_file %>"
@@ -56,7 +58,7 @@ pipeline.findgenesb:
     prepare_to_blast:
       action: pipeline.run_job
       input:
-        image: st2.my.dev:5000/sb_base
+        image: <% $.registry %>/sb_base
         args:
           - "/bin/bash"
           - "-c"
@@ -77,7 +79,7 @@ pipeline.findgenesb:
       # concurrency: 4
       action: pipeline.run_job
       input:
-        image: st2.my.dev:5000/blast_fb
+        image: <% $.registry %>/blast_fb
         args:
           - "<% $.share_docker %>/<% $.tempfile_prefix %>.<% $.i %>"
           - "/sb/DATA/<% $.database_path %>"
@@ -101,7 +103,7 @@ pipeline.findgenesb:
     build_final_result:
       action: pipeline.run_job
       input:
-        image: st2.my.dev:5000/fgenesb_out
+        image: <% $.registry %>/fgenesb_out
         args:
           - <% $.fgenesb_res_file %>
           - <% $.share_docker %>/<% $.tempfile_prefix %>.final
@@ -116,7 +118,7 @@ pipeline.findgenesb:
     pretty_graphics_cgview:
       action: pipeline.run_job
       input:
-        image: st2.my.dev:5000/cgview
+        image: <% $.registry %>/cgview
         args:
           - <% $.result_file %>
           - <% $.result_filename %>
@@ -124,7 +126,7 @@ pipeline.findgenesb:
         mounts: <% $.mounts %>
         name: cgview
       on-success:
-        - email_resutls: <% $.email != None %>
+        - email_resutls: <% $.email != null %>
 
     email_resutls:
       action: core.sendmail

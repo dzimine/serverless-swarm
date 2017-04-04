@@ -1,4 +1,4 @@
-FROM sb/blast
+FROM sb/blast_base
 
 RUN yum install -y perl
 

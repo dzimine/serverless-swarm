@@ -1,6 +1,6 @@
 ---
 
-# TODO: Check pre-requisites. Docker and openssl should be installed.
+# TODO: Check pre-requisites. Docker, docker-py, and openssl should be installed.
 
   - include: certificate.yml
     when: "'docker_registry' in group_names"
@@ -24,23 +24,29 @@
       pull: false
       restart_policy: always
     register: start_registry
-    when: "'docker_registry' in group_names"
-    # become: true
+    when: "inventory_hostname == groups['docker_registry'][0]"
+    become: true
 
-  - name: Declare the address of the first Registry as a fact
+  - name: Declare the IP address of the first Registry as a fact
     set_fact:
-      docker_registry_address: "{{ registry_host }}:{{ registry_port }}"
+      docker_registry_ip: "{{ hostvars[inventory_hostname]['ansible_' + registry_interface]['ipv4']['address'] }}"
     when: "inventory_hostname == groups['docker_registry'][0]"
 
-  - name: Distribute the fact containing address of the first Registry
+  - name: Distribute the fact containing IP address of the first Registry
     set_fact:
-      docker_registry_address: "{{hostvars[groups['docker_registry'][0]]['docker_registry_address'] }}"
+      docker_registry_ip: "{{hostvars[groups['docker_registry'][0]]['docker_registry_ip'] }}"
     when: "inventory_hostname != groups['docker_registry'][0]"
 
+  - name: Entry registry_name shortcut in /etc/hosts
+    lineinfile:
+      dest: "/etc/hosts"
+      line: "{{ docker_registry_ip }}  {{ registry_name }}"
+    become: true
+
   - name: Copy certificates to the client nodes
-    copy: 
+    copy:
       src: "{{local_cert_path}}/{{cert_name}}.crt"
-      dest: "/etc/docker/certs.d/{{ docker_registry_address }}/"
+      dest: "/etc/docker/certs.d/{{ registry_name }}:{{ registry_port}}/"
     become: true
 
 

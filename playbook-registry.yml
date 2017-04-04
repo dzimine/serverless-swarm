@@ -3,6 +3,10 @@
 - name: "Provision Local Docker Registry"
   hosts: all
   vars:
-    host_registry_path: "/vagrant/registry"
+    # For Vagrant, use `eth1`. For AWS use default `eth0`.
+    # CLI: `--extra-vars "docker_swarm_interface=eth1`
+    docker_swarm_interface: "eth1"
+    registry_interface: "eth1"
+
   roles:
     - role: ansible-registry

@@ -3,8 +3,8 @@
 
 set -e
 
-
-REGISTRY=st2.my.dev:5000
+REGISTRY=${DOCKER_REGISTRY:-'pregistry:5000'}
+echo "Using registry $REGISTRY"
 
 # IMAGES=$(ls *.Dockerfile | awk -F . '{ print $1 }')
 IMAGES=( Map Reduce Split )

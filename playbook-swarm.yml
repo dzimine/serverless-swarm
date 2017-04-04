@@ -3,6 +3,10 @@
 - name: "Provision Docker Swarm Cluster"
   hosts: all
   vars:
+    # For Vagrant, use `eth1`. For AWS use default `eth0`.
+    # CLI: `--extra-vars "docker_swarm_interface=eth1`
     docker_swarm_interface: "eth1"
+    skip_docker_py: False
+    skip_group: True
   roles:
     - role: ansible-dockerswarm

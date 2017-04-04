@@ -1,0 +1,32 @@
+# All common tasks to run on manager node go here
+
+- name: Install sendmail for st2 core.sendmail action
+  package:
+    name: sendmail
+    state: present
+
+- name: Run vizualizer as Swarm service | check if already running
+  command: docker service ls -f name=viz -q
+  register: find_viz_id
+
+- name: Run vizualizer as Swarm service | launch
+  command: >
+    docker service create
+    --name=viz
+    --publish=8080:8080/tcp
+    --constraint=node.role==manager
+    --mount=type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock
+    manomarks/visualizer
+  when: find_viz_id.stdout == ""
+
+# Hack-install pipeline pack on StackStorm
+- name: Hack-register pipeline pack on StackStorm | symlink pipeline
+  file:
+    src: "{{ faas_root_dir }}/pipeline"
+    dest: "/opt/stackstorm/packs/pipeline"
+    state: link
+
+- name: Hack-register pipeline pack on StackStorm | create virtualenv and reload
+  shell: "st2 run packs.setup_virtualenv packs=pipeline -- && st2ctl reload"
+  args:
+    creates: "/opt/stackstorm/virtualenvs/pipeline"
