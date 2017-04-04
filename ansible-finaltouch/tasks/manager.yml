@@ -1,5 +1,10 @@
 # All common tasks to run on manager node go here
 
+- name: Install sendmail for st2 core.sendmail action
+  package:
+    name: sendmail
+    state: present
+
 - name: Run vizualizer as Swarm service | check if already running
   command: docker service ls -f name=viz -q
   register: find_viz_id
