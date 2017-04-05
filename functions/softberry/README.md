@@ -4,11 +4,11 @@
 ### Get Softberry
 Softberry scripts and binaries are used in this pipeline. Download `softberry.tar.gz` from a secret location [^1]. Exctract `softberry.tar.gz`.
 
-* Put data in `../DATA` 
+* Put data in `../DATA`
 * Put software in `./softberry` (this directory)
 * `blast` - basic (TODO: use opensource blast from dockerhub)
 * `sb_base` - base Softberry image
-* `fgenesb` - encapsulates FgenesB - finding genes, proteins and etc. 
+* `fgenesb` - encapsulates FgenesB - finding genes, proteins and etc.
 * `blast_fb` - runs blast computations (on multiple nodes)
 * `fgenesb_out` - processes (reduces) blast results and produces filan output.
 
@@ -26,7 +26,7 @@ Containers can be build on any docker node, with access to code. Ssh there, go t
     ssh st2.my.dev
 
     # Build docker containers
-    /vagrant/softberry/docker-build.sh
+    /faas/functions/softberry/docker-build.sh
     ```
 The following containers are built:
 
@@ -40,7 +40,7 @@ The following containers are built:
 SSH to a controller node (`st2.my.dev`). Place the sequence input file (e.g. `test.seq`) in the `share`, and launch workflow action:
 
 ```
-st2 run -a pipeline.findgenesb input_file=/vagrant/share/test.seq \
+st2 run -a pipeline.findgenesb input_file=/share/test.seq \
 min_len=150 result_filename=result.result parallels=4
 ```
 
@@ -49,7 +49,7 @@ min_len=150 result_filename=result.result parallels=4
 1. Run `fgenesb` conatiner:
 
     ```
-    docker run -it -v /vagrant/DATA:/sb/DATA -v /vagrant/share:/share  --rm \
+    docker run -it -v /data:/sb/DATA -v /share:/share  --rm \
     st2.my.dev:5000/fgenesb /share/test.seq /share/test.res 150
     ```
 
@@ -58,7 +58,7 @@ min_len=150 result_filename=result.result parallels=4
 2. Prepare data for blast run, assuming 2 parallel blast executors:
 
     ```
-    docker run -it --rm -v /vagrant/DATA:/sb/DATA -v /vagrant/share:/share st2.my.dev:5000/sb_base
+    docker run -it --rm -v /data:/sb/DATA -v /share:/share st2.my.dev:5000/sb_base
 
     /sb/blast_scripts/fgenesb_get_proteins.pl /share/test.res > /share/prot2blast.0
 
@@ -68,11 +68,11 @@ min_len=150 result_filename=result.result parallels=4
 3. Run BLAST (2 times, for 2 parts):
 
     ```
-    docker run -it --rm -v /vagrant/DATA:/sb/DATA -v /vagrant/share:/share \
+    docker run -it --rm -v /data:/sb/DATA -v /share:/share \
     st2.my.dev:5000/blast_fb /share/out.1 /sb/DATA/cog_db/cog.pro \
     /share/out.1.1 /sb/blast-2.2.26/bin/blastpgp 1e-10  4
 
-    docker run -it --rm -v /vagrant/DATA:/sb/DATA -v /vagrant/share:/share \
+    docker run -it --rm -v /data:/sb/DATA -v /share:/share \
     st2.my.dev:5000/blast_fb /share/out.2 /sb/DATA/cog_db/cog.pro \
     /share/out.1.2 /sb/blast-2.2.26/bin/blastpgp 1e-10  4
     ```
@@ -80,11 +80,11 @@ min_len=150 result_filename=result.result parallels=4
 4. Locally on the host (any with access to `share`), combine blast results by concating the files:
 
     ```
-    cat  /vagrant/share/out.1.* > /vagrant/share/fin_prot
+    cat  /share/out.1.* > /share/fin_prot
     ```
 
 5. Build final result
     ```
-    docker run -it --rm -v /vagrant/DATA:/sb/DATA -v /vagrant/share:/share \
+    docker run -it --rm -v /data:/sb/DATA -v /share:/share \
     st2.my.dev:5000/fgenesb_out /share/test.res /share/fin_prot /share/final_result
     ```
