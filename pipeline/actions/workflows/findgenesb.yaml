@@ -4,7 +4,7 @@ version: '2.0'
 pipeline.findgenesb:
   description: "See ../findgenesb.yaml"
   vars:
-    fgenesb_res_file: /share/fgenesb.res # in container
+    fgenesb_res_file: <% $.share_docker %>/fgenesb.res # in container
     tempfile_prefix: out
     mounts:
       - "type=bind,source=<% $.share_host %>/findgenesb.<% env().st2_execution_id %>,target=<% $.share_docker %>"

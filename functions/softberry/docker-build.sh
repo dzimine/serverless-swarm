@@ -21,7 +21,7 @@ for i in "${IMAGES[@]}"; do
 done
 
 echo "Building image for cgview ..."
-docker build -t sb/cgview -t $REGISTRY/cgview -f ./FGenesb_CGView/Dockerfile FGenesb_CGView/
+docker build -t sb/cgview -t $REGISTRY/cgview -f ./Fgenesb_CGView/Dockerfile Fgenesb_CGView/
 echo "Building cgview to local registry ..."
 docker push $REGISTRY/cgview
 
