@@ -12,8 +12,8 @@ data "template_file" "userdata_worker" {
 }
 
 data "template_cloudinit_config" "config" {
-  # gzip = false
-  # base64_encode = false
+  gzip = false
+  base64_encode = false
   part {
     content_type = "text/cloud-config"
     content = "${data.template_file.userdata_worker.rendered}"

@@ -46,3 +46,13 @@ variable "security_group_ssh" {
 variable "security_group_st2" {
   default = "sg-cfdfa8b7"
 }
+variable "asg_min" {
+  default = 0
+}
+variable "asg_max" {
+  default = 10
+}
+variable "asg_desired" {
+  default = 1
+}
+
