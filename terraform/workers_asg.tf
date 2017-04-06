@@ -1,5 +1,6 @@
 resource "aws_ami_from_instance" "worker" {
   name               = "swarm-worker-tf"
+  depends_on         = ["null_resource.ansible-provision"]
   source_instance_id = "${aws_instance.worker.0.id}"
 }
 
@@ -35,13 +36,13 @@ resource "aws_autoscaling_group" "swarm-workers" {
   # availability_zones   = ["${var.aws_availability_zone}"]
   vpc_zone_identifier = ["${var.subnet}"]
 
-  # lifecycle {
-  #   create_before_destroy = true
-  # }
+  lifecycle {
+    create_before_destroy = true
+  }
 
   tag {
     key                 = "Name"
-    value               = "web-asg"
+    value               = "asg_worker"
     propagate_at_launch = "true"
   }
 }

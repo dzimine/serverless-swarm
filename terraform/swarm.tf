@@ -35,6 +35,9 @@ resource "aws_instance" "worker" {
     snapshot_id = "${var.gs_ebs_snapshot}"
     delete_on_termination = true
   }
+  provisioner "remote-exec" {
+    inline = ["# Connected!"]
+  }
   tags {
     Name = "worker"
   }
@@ -68,6 +71,9 @@ resource "aws_instance" "manager" {
   tags {
     Name = "manager"
   }
+  provisioner "remote-exec" {
+    inline = ["# Connected!"]
+  }
   user_data = "${data.template_cloudinit_config.config.rendered}"
 }
 
@@ -77,6 +83,17 @@ resource "aws_route53_record" "st2" {
   type = "CNAME"
   ttl = 60
   records = ["${aws_instance.manager.public_dns}"]
+}
+
+resource "null_resource" "ansible-provision" {
+
+  depends_on = ["aws_route53_record.st2", "aws_route53_record.node"]
+
+  provisioner "local-exec" {
+    # TODO: make runnable from any dir.
+    # TODO: better than sleep?
+    command =  "cd .. ; sleep 60; ansible-playbook playbook-swarm.yml -vv -i inventory.aws"
+  }
 }
 
 output "worker_public_ip" {
