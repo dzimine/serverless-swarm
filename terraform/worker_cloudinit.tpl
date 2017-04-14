@@ -25,3 +25,6 @@ runcmd:
 - mount -a
 # Avoid irritating ssh disconnect
 - echo "ClientAliveInterval 60" >>  /etc/ssh/sshd_config
+# Leave docker swarm cluster if already joined
+- docker swarm leave
+- docker swarm join --token $(cat /var/tmp/swarm_worker_token)

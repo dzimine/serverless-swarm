@@ -4,6 +4,9 @@ provider "aws" {
   region = "${var.aws_region}"
 }
 
+###############################################################################
+# Provision st2 and nodes instances, mount EBS and EFS storage via cloud-init
+#
 data "template_file" "userdata_worker" {
   template = "${file("worker_cloudinit.tpl")}"
   vars {
@@ -12,8 +15,8 @@ data "template_file" "userdata_worker" {
 }
 
 data "template_cloudinit_config" "config" {
-  # gzip = false
-  # base64_encode = false
+  gzip = false
+  base64_encode = false
   part {
     content_type = "text/cloud-config"
     content = "${data.template_file.userdata_worker.rendered}"
@@ -35,19 +38,13 @@ resource "aws_instance" "worker" {
     snapshot_id = "${var.gs_ebs_snapshot}"
     delete_on_termination = true
   }
+  provisioner "remote-exec" {
+    inline = ["# Connected!"]
+  }
   tags {
     Name = "worker"
   }
   user_data = "${data.template_cloudinit_config.config.rendered}"
-}
-
-resource "aws_route53_record" "node" {
-  count = "${var.n_workers}"
-  zone_id = "ZV08YC45J234P"
-  name = "node${var.n_workers}"
-  type = "CNAME"
-  ttl = 60
-  records = ["${element(aws_instance.worker.*.public_dns, count.index)}"]
 }
 
 resource "aws_instance" "manager" {
@@ -68,16 +65,88 @@ resource "aws_instance" "manager" {
   tags {
     Name = "manager"
   }
+  provisioner "remote-exec" {
+    inline = ["# Connected!"]
+  }
   user_data = "${data.template_cloudinit_config.config.rendered}"
 }
 
+###############################################################################
+# Create DNS records and wait till they propagate all the way to localhost
+#
+resource "aws_route53_record" "node" {
+  count = "${var.n_workers}"
+  zone_id = "${var.zone_id}"
+  name = "node${count.index + 1}"
+  type = "CNAME"
+  ttl = 60
+  records = ["${element(aws_instance.worker.*.public_dns, count.index)}"]
+}
+
 resource "aws_route53_record" "st2" {
-  zone_id = "ZV08YC45J234P"
+  zone_id = "${var.zone_id}"
   name = "st2"
   type = "CNAME"
   ttl = 60
   records = ["${aws_instance.manager.public_dns}"]
 }
+
+# Make sure DNS records seen on localhost (once in a blue moon they aren't due to DNS cache, etc.)
+resource "null_resource" "wait_for_dns_workers" {
+  count = "${var.n_workers}"
+  provisioner "local-exec" {
+    command = "until [[  $(dig NS +short ${element(aws_route53_record.node.*.fqdn, count.index)}) ]]; do echo 'waiting'; sleep 10; done"
+  }
+}
+
+resource "null_resource" "wait_for_dns_manager" {
+  provisioner "local-exec" {
+    command = "until [[  $(dig NS +short ${aws_route53_record.st2.fqdn}) ]]; do echo 'waiting';  sleep 10;  done"
+  }
+}
+
+###############################################################################
+# Generate ansible inventory and provision with Ansible, when DNS is ready
+#
+data "template_file" "ansible_node" {
+  count = "${var.n_workers}"
+  template = "${file("hostname.tpl")}"
+  vars {
+    index = "${count.index + 1}"
+    name  = "node"
+    extra = " ansible_host=${element(aws_route53_record.node.*.fqdn, count.index)}"
+  }
+}
+
+data "template_file" "inventory" {
+  template = "${file("inventory.tpl")}"
+  vars {
+    manager ="st2 ansible_host=${aws_route53_record.st2.fqdn}"
+    node_count = "${length(data.template_file.ansible_node.*.rendered)}"
+    nodes = "${join("\n",data.template_file.ansible_node.*.rendered)}"
+  }
+}
+
+resource "null_resource" "local" {
+  triggers {
+    template = "${data.template_file.inventory.rendered}"
+  }
+
+  provisioner "local-exec" {
+    command = "echo \"${data.template_file.inventory.rendered}\" > ./inventory.aws"
+  }
+}
+
+resource "null_resource" "ansible-provision" {
+  depends_on = ["null_resource.wait_for_dns_workers", "null_resource.wait_for_dns_manager"]
+  provisioner "local-exec" {
+    # TODO: make runnable from any dir.
+    command =  "cd .. ; ansible-playbook playbook-swarm.yml -vv -i terraform/inventory.aws"
+    # command =  "cd .. ; ansible-playbook playbook-all.yml -vv -i terraform/inventory.aws"
+  }
+}
+
+###############################################################################
 
 output "worker_public_ip" {
   value = "${join(",",aws_instance.worker.*.public_ip)}"
