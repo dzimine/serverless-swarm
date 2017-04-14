@@ -47,7 +47,7 @@ resource "aws_instance" "worker" {
 resource "aws_route53_record" "node" {
   count = "${var.n_workers}"
   zone_id = "ZV08YC45J234P"
-  name = "node${var.n_workers}"
+  name = "node${count.index + 1}"
   type = "CNAME"
   ttl = 60
   records = ["${element(aws_instance.worker.*.public_dns, count.index)}"]
@@ -85,14 +85,56 @@ resource "aws_route53_record" "st2" {
   records = ["${aws_instance.manager.public_dns}"]
 }
 
-resource "null_resource" "ansible-provision" {
+# Make sure DNS records seen on localhost (once in a blue moon they aren't due to DNS cache, etc.)
+resource "null_resource" "wait_for_dns_workers" {
+  count = "${var.n_workers}"
+  provisioner "local-exec" {
+    command = "until [[  $(dig NS +short ${element(aws_route53_record.node.*.fqdn, count.index)}) ]]; do echo 'waiting'; sleep 10; done"
+  }
+}
 
-  depends_on = ["aws_route53_record.st2", "aws_route53_record.node"]
+resource "null_resource" "wait_for_dns_manager" {
+  provisioner "local-exec" {
+    command = "until [[  $(dig NS +short ${aws_route53_record.st2.fqdn}) ]]; do echo 'waiting';  sleep 10;  done"
+  }
+}
+
+# Generate Ansible inventory
+data "template_file" "ansible_node" {
+  count = "${var.n_workers}"
+  template = "${file("hostname.tpl")}"
+  vars {
+    index = "${count.index + 1}"
+    name  = "node"
+    extra = " ansible_host=${element(aws_route53_record.node.*.fqdn, count.index)}"
+  }
+}
+
+data "template_file" "inventory" {
+  template = "${file("inventory.tpl")}"
+  vars {
+    manager ="st2 ansible_host=${aws_route53_record.st2.fqdn}"
+    node_count = "${length(data.template_file.ansible_node.*.rendered)}"
+    nodes = "${join("\n",data.template_file.ansible_node.*.rendered)}"
+  }
+}
+
+resource "null_resource" "local" {
+  triggers {
+    template = "${data.template_file.inventory.rendered}"
+  }
 
   provisioner "local-exec" {
+    command = "echo \"${data.template_file.inventory.rendered}\" > ./inventory.aws"
+  }
+}
+
+resource "null_resource" "ansible-provision" {
+  depends_on = ["null_resource.wait_for_dns_workers", "null_resource.wait_for_dns_manager"]
+  provisioner "local-exec" {
     # TODO: make runnable from any dir.
-    # TODO: better than sleep?
-    command =  "cd .. ; sleep 60; ansible-playbook playbook-swarm.yml -vv -i inventory.aws"
+    # command =  "cd .. ; ansible-playbook playbook-swarm.yml -vv -i terraform/inventory.aws"
+    command =  "cd .. ; ansible-playbook playbook-all.yml -vv -i terraform/inventory.aws"
   }
 }
 

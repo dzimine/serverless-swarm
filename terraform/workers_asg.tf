@@ -4,6 +4,16 @@ resource "aws_ami_from_instance" "worker" {
   source_instance_id = "${aws_instance.worker.0.id}"
 }
 
+resource "aws_route53_record" "node1" {
+  # Update node1 in route53, as the IP changes after aws_ami_from_instance reboots the instance.
+  depends_on = ["aws_ami_from_instance.worker"]
+  zone_id = "ZV08YC45J234P"
+  name = "node${var.n_workers}"
+  type = "CNAME"
+  ttl = 60
+  records = ["${aws_instance.worker.0.public_dns}"]
+}
+
 resource "aws_launch_configuration" "workers" {
   name_prefix = "swarm-workers-"
   # How to automatically look up the id from output of other tasks?
