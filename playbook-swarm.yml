@@ -5,8 +5,9 @@
   vars:
     # For Vagrant, use `eth1`. For AWS use default `eth0`.
     # CLI: `--extra-vars "docker_swarm_interface=eth1`
-    docker_swarm_interface: "eth1"
+    docker_swarm_interface: "{{ 'eth1' if target=='vagrant' else 'eth0' }}"
     skip_docker_py: False
     skip_group: True
+    enable_experimental_mode: True
   roles:
     - role: ansible-dockerswarm
