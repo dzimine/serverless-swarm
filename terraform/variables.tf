@@ -6,6 +6,10 @@ variable "key_path" {}
 variable "aws_region" {}
 
 # Variables
+variable zone_id {
+  default = "ZV08YC45J234P"
+  description = "Route53 Hosted Zone ID for public DNS"
+}
 variable ami {
   default = "ami-a58d0dc5"
 }
@@ -24,11 +28,11 @@ variable n_workers {
 }
 variable "gs_efs_share" {
   default = "fs-5b418ff2.efs.us-west-2.amazonaws.com"
-  description = "AWS EFS storage ID for RW `share`"
+  description = "AWS EFS storage ID for read-write `share`"
 }
 variable "gs_ebs_snapshot" {
   default = "snap-02b46f961d1d16e0e"
-  description = "Data EBS Volume for RO `data`"
+  description = "Data EBS Volume for read-only `data`"
 }
 # AWS Reads
 variable "aws_availability_zone" {
@@ -39,20 +43,25 @@ variable subnet {
 }
 variable "security_group_vpc" {
   default = "sg-c09cebb8"
+  description = "Security group for master-worker communications"
 }
 variable "security_group_ssh" {
   default = "sg-4f83f437"
+  description = "Security group to access the boxes via SSH remotely"
 }
 variable "security_group_st2" {
   default = "sg-cfdfa8b7"
+  description = "Security group to for st2 node: HTTP, HTTPS, 8080"
 }
 variable "asg_min" {
   default = 0
+  description = "Auto-scaling group MIN"
 }
 variable "asg_max" {
   default = 10
+  description = "Auto-scaling group MIN"
 }
 variable "asg_desired" {
   default = 1
+  description = "Auto-scaling group desired"
 }
-

@@ -4,6 +4,9 @@ provider "aws" {
   region = "${var.aws_region}"
 }
 
+###############################################################################
+# Provision st2 and nodes instances, mount EBS and EFS storage via cloud-init
+#
 data "template_file" "userdata_worker" {
   template = "${file("worker_cloudinit.tpl")}"
   vars {
@@ -44,15 +47,6 @@ resource "aws_instance" "worker" {
   user_data = "${data.template_cloudinit_config.config.rendered}"
 }
 
-resource "aws_route53_record" "node" {
-  count = "${var.n_workers}"
-  zone_id = "ZV08YC45J234P"
-  name = "node${count.index + 1}"
-  type = "CNAME"
-  ttl = 60
-  records = ["${element(aws_instance.worker.*.public_dns, count.index)}"]
-}
-
 resource "aws_instance" "manager" {
   ami = "${var.ami}"
   instance_type = "${var.instance_type_manager}"
@@ -77,8 +71,20 @@ resource "aws_instance" "manager" {
   user_data = "${data.template_cloudinit_config.config.rendered}"
 }
 
+###############################################################################
+# Create DNS records and wait till they propagate all the way to localhost
+#
+resource "aws_route53_record" "node" {
+  count = "${var.n_workers}"
+  zone_id = "${var.zone_id}"
+  name = "node${count.index + 1}"
+  type = "CNAME"
+  ttl = 60
+  records = ["${element(aws_instance.worker.*.public_dns, count.index)}"]
+}
+
 resource "aws_route53_record" "st2" {
-  zone_id = "ZV08YC45J234P"
+  zone_id = "${var.zone_id}"
   name = "st2"
   type = "CNAME"
   ttl = 60
@@ -99,7 +105,9 @@ resource "null_resource" "wait_for_dns_manager" {
   }
 }
 
-# Generate Ansible inventory
+###############################################################################
+# Generate ansible inventory and provision with Ansible, when DNS is ready
+#
 data "template_file" "ansible_node" {
   count = "${var.n_workers}"
   template = "${file("hostname.tpl")}"
@@ -133,10 +141,12 @@ resource "null_resource" "ansible-provision" {
   depends_on = ["null_resource.wait_for_dns_workers", "null_resource.wait_for_dns_manager"]
   provisioner "local-exec" {
     # TODO: make runnable from any dir.
-    # command =  "cd .. ; ansible-playbook playbook-swarm.yml -vv -i terraform/inventory.aws"
-    command =  "cd .. ; ansible-playbook playbook-all.yml -vv -i terraform/inventory.aws"
+    command =  "cd .. ; ansible-playbook playbook-swarm.yml -vv -i terraform/inventory.aws"
+    # command =  "cd .. ; ansible-playbook playbook-all.yml -vv -i terraform/inventory.aws"
   }
 }
+
+###############################################################################
 
 output "worker_public_ip" {
   value = "${join(",",aws_instance.worker.*.public_ip)}"
