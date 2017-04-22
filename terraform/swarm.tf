@@ -141,8 +141,8 @@ resource "null_resource" "ansible-provision" {
   depends_on = ["null_resource.wait_for_dns_workers", "null_resource.wait_for_dns_manager"]
   provisioner "local-exec" {
     # TODO: make runnable from any dir.
-    command =  "cd .. ; ansible-playbook playbook-swarm.yml -vv -i terraform/inventory.aws"
-    # command =  "cd .. ; ansible-playbook playbook-all.yml -vv -i terraform/inventory.aws"
+    # command =  "cd .. ; ansible-playbook playbook-swarm.yml -vv -i terraform/inventory.aws"
+    command =  "cd .. ; ansible-playbook playbook-all.yml -vv -i terraform/inventory.aws"
   }
 }
 
