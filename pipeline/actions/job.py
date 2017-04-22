@@ -25,7 +25,7 @@ class RunJobAction(Action):
 
             cs = docker.types.ContainerSpec(
                 image, command=command, args=args, mounts=mounts)
-            r = {'Reservation': {'MemoryBytes': reserve_memory, 'NanoCPUs': reserve_cpu}}
+            r = {'Reservations': {'MemoryBytes': reserve_memory, 'NanoCPUs': reserve_cpu}}
             tt = docker.types.TaskTemplate(
                 cs, restart_policy={'Condition': 'none'}, resources=r)
             self.logger.debug("TaskTemplate: %s", tt)

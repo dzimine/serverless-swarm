@@ -14,6 +14,7 @@ pipeline.wordcount:
     - share_docker
     - parallels
     - registry
+    - reserve_memory
     - delay
 
   task-defaults:
@@ -41,6 +42,7 @@ pipeline.wordcount:
             - "<% $.parallels %>"
             - <% $.share_docker %>/out
         mounts: <% $.mounts %>
+        reserve_memory: <% $.reserve_memory %>
         name: split
       on-success:
         - map
@@ -57,6 +59,7 @@ pipeline.wordcount:
           - "<% $.share_docker %>/out.map.<% $.i %>"
           - <% $.delay %>
         mounts: <% $.mounts %>
+        reserve_memory: <% $.reserve_memory %>
         name: map
         # Play with this to simulate high load
         # reserve_cpu: 4
@@ -81,4 +84,5 @@ pipeline.wordcount:
           - <% $.share_docker %>/<% $.result_filename %>
           - <% $.delay %>
         mounts: <% $.mounts %>
+        reserve_memory: <% $.reserve_memory %>
         name: reduce

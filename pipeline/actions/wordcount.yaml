@@ -29,6 +29,9 @@ parameters:
     type: string
     description: Private docker registry
     default: "pregistry:5000"
+  reserve_memory:
+      type: integer
+      description: Memory limit in Bytes. To simulate high resource demand.
   delay:
     type: integer
     description: Delay to simulate long running process
