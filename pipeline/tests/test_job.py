@@ -70,7 +70,7 @@ class RunJobActionTestCase(BaseActionTestCase):
 
             },
             'RestartPolicy': {'Condition': 'none'},
-            'Resources': {'Reservation': {'MemoryBytes': 536870912, 'NanoCPUs': 4}}
+            'Resources': {'Reservations': {'MemoryBytes': 536870912, 'NanoCPUs': 4}}
         }
         mock_create.assert_called_once_with(expected, name=result[1]['job'])
         mock_tasks.assert_called_with(filters={'service': '1111'})
@@ -92,14 +92,14 @@ class RunJobActionTestCase(BaseActionTestCase):
                 'Args': None
             },
             'RestartPolicy': {'Condition': 'none'},
-            'Resources': {'Reservation': {'MemoryBytes': None, 'NanoCPUs': None}}
+            'Resources': {'Reservations': {'MemoryBytes': None, 'NanoCPUs': None}}
         }
         mock_create.assert_called_once_with(expected, name=result[1]['job'])
         mock_tasks.assert_called_with(filters={'service': '1111'})
 
     @skip("Only run on real swarm")
     def test_run_real(self):
-        image = "st2.my.dev:5000/encode"
+        image = "pregistry:5000/encode"
         command = None
         args = ["-i/share/li.txt", "-o/share/li.out", "--delay", "10"]
         mounts = ["source=/vagrant/share,dst=/share,type=bind", "src=share,dst=/bar"]
