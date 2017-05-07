@@ -21,32 +21,36 @@ class SwarmPendingTasksSensor(PollingSensor):
         self.over_threshold = False
 
     def setup(self):
-        # TODO(dzimine): get url from config
-        self.client = docker.DockerClient(base_url='unix://var/run/docker.sock')
+        self.client = docker.DockerClient(base_url=self.config.get('base_url'))
         self.threshold = self._config.get('swarm_pending_tasks_threshold', 0)
 
     def poll(self):
         tasks = self.client.api.tasks(filters={'desired-state': 'running'})
         pending_tasks = [task for task in tasks if task['Status']['State'] == 'pending']
         pending_count = len(pending_tasks)
-        payload = {
-            "count": pending_count,
-            "over_threshold": self.over_threshold,
-            "tasks": pending_tasks
-        }
+
+        def _payload():
+            return {
+                "count": pending_count,
+                "over_threshold": self.over_threshold,
+                "tasks": pending_tasks
+            }
+
         if not self.over_threshold and pending_count > self.threshold:
-            self._logger.info(
-                'Dispatching trigger %s, UP ABOVE threshold, payload=%s', TRIGGER, payload)
-            # TODO: add trace_tag
             self.over_threshold = True
-            self._sensor_service.dispatch(trigger=TRIGGER, payload=payload)
-        elif self.over_threshold and pending_count <= self.threshold:
             self._logger.info(
-                'Dispatching trigger %s, DOWN BELOW threshold, payload=%s', TRIGGER, payload)
+                'Dispatching trigger %s, UP ABOVE threshold, payload=%s', TRIGGER, _payload())
+            # TODO: add trace_tag
+            self._sensor_service.dispatch(trigger=TRIGGER, payload=_payload())
+        elif self.over_threshold and pending_count <= self.threshold:
             self.over_threshold = False
-            self._sensor_service.dispatch(trigger=TRIGGER, payload=payload)
+            self._logger.info(
+                'Dispatching trigger %s, DOWN BELOW threshold, payload=%s', TRIGGER, _payload())
+            self._sensor_service.dispatch(trigger=TRIGGER, payload=_payload())
         else:
-            self._logger.debug('Not dispatching trigger %s: threshold not crossed', TRIGGER)
+            self._logger.debug(
+                'Not dispatching trigger %s: over=%s threshold=%d count=%d ',
+                TRIGGER, self.over_threshold, self.threshold, pending_count)
 
     def cleanup(self):
         # This is called when the st2 system goes down. You can perform cleanup operations like

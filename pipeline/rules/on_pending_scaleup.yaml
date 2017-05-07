@@ -3,16 +3,17 @@ name: on_pending_scaleup_test
 # TODO: create _aws and _openstack rules
 pack: pipeline
 description: "Scale up the Swarm when pending tasks go over threshold."
-enabled: true
+enabled: True
 
 trigger:
     type: pipeline.swarm_pending_tasks
     parameters: {}
 
 criteria:
-    trigger.count:
-        type: greaterthan
-        pattern: 2
+    # Crossing threshold up
+    trigger.over_threshold:
+        type: equals
+        pattern: True
 
 action:
     ref: core.local

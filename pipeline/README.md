@@ -2,6 +2,9 @@
 
 **Note:** this pack is temporary and will be refactored: I'll split it by swarm pack with all swarm st2 actions and sensors, and pipelines pack with all the workflows.
 
+Don't forget to give `st2` user access to the Docker group `usermod -a -G docker st2`,
+else docker won't work.
+
 To run the pack's unit tests:
 
 ```

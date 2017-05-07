@@ -39,6 +39,8 @@ class SwarmPendingTasksSensorTestCase(BaseSensorTestCase):
         self.assertEqual(
             self.get_dispatched_triggers()[0]['payload']['tasks'],
             mock_tasks.return_value)
+        self.assertEqual(
+            self.get_dispatched_triggers()[0]['payload']['over_threshold'], True)
         # Check that trigger dispatch only once
         sensor.poll()
         self.assertEqual(len(self.get_dispatched_triggers()), 1)
@@ -53,6 +55,8 @@ class SwarmPendingTasksSensorTestCase(BaseSensorTestCase):
         sensor.poll()
         # print sensor._logger.mock_calls
         self.assertTriggerDispatched(trigger=pending_queue.TRIGGER)
+        self.assertEqual(
+            self.get_dispatched_triggers()[0]['payload']['over_threshold'], False)
 
     @mock.patch('docker.api.APIClient.tasks')
     def test_poll_threshold(self, mock_tasks):
