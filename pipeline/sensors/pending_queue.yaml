@@ -1,0 +1,18 @@
+class_name: SwarmPendingTasksSensor
+entry_point: pending_queue.py
+description: "Swarm pending queue sensor"
+trigger_types:
+  -
+    name: threshold
+    payload_schema:
+      type: object
+      properties:
+          count:
+            type: integer
+            description: Number of pending swarm tasks.
+          tasks:
+            type: array
+            default: []
+            description: List of swarm pending tasks.
+
+
