@@ -5,8 +5,10 @@
 To run the pack's unit tests:
 
 ```
-# Dang we need ST2
-git clone --depth=1 https://github.com/StackStorm/st2.git /tmp/st2
-# Run unit tests
-ST2_REPO_PATH=/tmp/st2 /opt/stackstorm/st2/bin/st2-run-pack-tests -p /opt/stackstorm/packs/pipeline
+# Activate existing pack's virtual environmet
+source /opt/stackstorm/virtualenvs/pipeline/bin/activate
+# Run the tests first time - it will install test dependencies
+t2-run-pack-tests -x /opt/stackstorm/pipeline
+# Skip installing dependencies on subsequent runs
+t2-run-pack-tests -x -j /opt/stackstorm/pipeline
 ```

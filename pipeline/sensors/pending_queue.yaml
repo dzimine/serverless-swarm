@@ -10,6 +10,9 @@ trigger_types:
           count:
             type: integer
             description: Number of pending swarm tasks.
+          over_threshold:
+            type: boolean
+            description: True if going up above threshold, False if going down below.
           tasks:
             type: array
             default: []
