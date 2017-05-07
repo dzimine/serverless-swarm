@@ -2,7 +2,7 @@ from st2reactor.sensor.base import PollingSensor
 
 import docker
 
-TRIGGER = "pipeline.sensor_task_queue"
+TRIGGER = "pipeline.swarm_pending_tasks"
 
 
 class SwarmPendingTasksSensor(PollingSensor):

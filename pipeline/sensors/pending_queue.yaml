@@ -3,7 +3,7 @@ entry_point: pending_queue.py
 description: "Swarm pending queue sensor"
 trigger_types:
   -
-    name: threshold
+    name: swarm_pending_tasks
     payload_schema:
       type: object
       properties:
@@ -14,5 +14,3 @@ trigger_types:
             type: array
             default: []
             description: List of swarm pending tasks.
-
-
