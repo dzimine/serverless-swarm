@@ -9,6 +9,7 @@ class RunJobAction(Action):
 
     def __init__(self, config):
         super(RunJobAction, self).__init__(config)
+        # TODO(dzimine): get URL from config
         self.client = docker.DockerClient(base_url='unix://var/run/docker.sock')
         self.pool_interval = 1
 
@@ -23,6 +24,7 @@ class RunJobAction(Action):
             args = [str(x) for x in args] if args else None
             mounts = [_parse_mount_string(mount) for mount in mounts] if mounts else None
 
+            # TODO(dzimine): Add label
             cs = docker.types.ContainerSpec(
                 image, command=command, args=args, mounts=mounts)
             r = {'Reservations': {'MemoryBytes': reserve_memory, 'NanoCPUs': reserve_cpu}}

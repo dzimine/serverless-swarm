@@ -2,11 +2,16 @@
 
 **Note:** this pack is temporary and will be refactored: I'll split it by swarm pack with all swarm st2 actions and sensors, and pipelines pack with all the workflows.
 
+Don't forget to give `st2` user access to the Docker group `usermod -a -G docker st2`,
+else docker won't work.
+
 To run the pack's unit tests:
 
 ```
-# Dang we need ST2
-git clone --depth=1 https://github.com/StackStorm/st2.git /tmp/st2
-# Run unit tests
-ST2_REPO_PATH=/tmp/st2 /opt/stackstorm/st2/bin/st2-run-pack-tests -p /opt/stackstorm/packs/pipeline
+# Activate existing pack's virtual environmet
+source /opt/stackstorm/virtualenvs/pipeline/bin/activate
+# Run the tests first time - it will install test dependencies
+t2-run-pack-tests -x /opt/stackstorm/pipeline
+# Skip installing dependencies on subsequent runs
+t2-run-pack-tests -x -j /opt/stackstorm/pipeline
 ```
