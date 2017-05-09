@@ -132,6 +132,7 @@ pipeline.findgenesb:
       action: core.sendmail
       input:
         to: <% $.email %>
+        from: "stanley@st2.my.dev"
         subject: "Your annotated sequence findgenesb.<% env().st2_execution_id %>"
         body: "Enjoy your annotated sequence. Love, Esty Tew."
         attachments: <% $.workdir_host %>/<% $.result_filename %>.png,<% $.workdir_host %>/<% $.result_filename %>
