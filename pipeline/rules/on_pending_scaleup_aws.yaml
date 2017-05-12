@@ -2,7 +2,7 @@
 name: on_pending_scaleup_aws
 pack: pipeline
 description: "Scale up the Swarm on AWS when pending tasks go over threshold."
-enabled: False
+enabled: True
 
 trigger:
     type: pipeline.swarm_pending_tasks
@@ -18,4 +18,4 @@ action:
     ref: aws.autoscaling_update_auto_scaling_group
     parameters:
         AutoScalingGroupName: swarm-workers-tf
-        DesiredCapacity: "{{ st2kv.system.workers | int + 1 }}"
+        DesiredCapacity: "{{ st2kv.system.asg.workers }}"

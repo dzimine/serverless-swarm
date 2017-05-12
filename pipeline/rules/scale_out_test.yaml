@@ -1,8 +1,7 @@
 ---
-name: on_pending_scaleup_test
-# TODO: create _aws and _openstack rules
+name: scale_out_test
 pack: pipeline
-description: "Scale up the Swarm when pending tasks go over threshold."
+description: "Test scale-in rule, fires  on swarm pending task queue count going UP ABOVE threshold"
 enabled: True
 
 trigger:
@@ -18,4 +17,5 @@ criteria:
 action:
     ref: core.local
     parameters:
-        cmd: echo {{ trigger.count }}
+        cmd: "echo Pending queue going up: {{ trigger.count }}"
+
