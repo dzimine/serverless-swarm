@@ -1,0 +1,140 @@
+heat_template_version: 2014-10-16
+
+description: |
+    Webhook triggered autoscaling group for Docker cluster
+
+parameters:
+
+    docker_swarm_manager:
+        type: string
+        label: Swarm Manager
+        description: Docker swarm manager.
+
+    docker_swarm_token:
+        type: string
+        label: Swarm Token
+        description: Token required to join an existing docker swarm.
+
+    nfs_file_server:
+        type: string
+        label: File Server
+        description: File server for the file share between the workers.
+
+resources:
+
+    access_key:
+        type: OS::Nova::KeyPair
+        properties:
+            name: { get_param: "OS::stack_name" }
+            save_private_key: true
+
+    workers:
+        type: Rackspace::AutoScale::Group
+        properties:
+            groupConfiguration:
+                name: { get_param: "OS::stack_name" }
+                maxEntities: 5
+                minEntities: 1
+                cooldown: 120
+            launchConfiguration:
+                type: launch_server
+                args:
+                    server:
+                        name: { get_param: "OS::stack_name" }
+                        flavorRef: general1-1 # 1 GB General Purpose v1
+                        imageRef: 9b3ae961-0ba0-4d5a-973f-2e79043f0ddd # Ubuntu 16.04 LTS (Xenial Xerus) (PVHVM) 
+                        key_name: { get_resource: access_key }
+                        config_drive: true
+                        networks:
+                            - uuid: 00000000-0000-0000-0000-000000000000 # PublicNet
+                            - uuid: 11111111-1111-1111-1111-111111111111 # ServiceNet
+                            - uuid: 1ef7069a-1b89-4df6-9b76-11ea4ce562db # Internal
+                        user_data:
+                            str_replace:
+                                template: |
+                                    #!/bin/bash
+                                    sudo apt-get update
+                                    sudo apt-get -y install nfs-common
+                                    sudo mkdir -p /share
+                                    sudo mkdir -p /faas
+                                    sudo mkdir -p /data
+                                    sudo mkdir -p /certs
+                                    sudo mount -t nfs -o proto=tcp,port=2049 FILE_SERVER:/share /share
+                                    sudo mount -t nfs -o proto=tcp,port=2049 FILE_SERVER:/faas /faas
+                                    sudo mount -t nfs -o proto=tcp,port=2049 FILE_SERVER:/data /data
+                                    sudo mount -t nfs -o proto=tcp,port=2049 FILE_SERVER:/certs /certs
+                                    sudo apt-get -y install apt-transport-https ca-certificates curl
+                                    sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+                                    sudo add-apt-repository -y "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+                                    sudo apt-get update
+                                    sudo apt-get -y install docker-ce
+                                    sudo docker swarm join --token SWARM_TOKEN SWARM_MANAGER:2377
+                                    sudo echo "OPSADMIN_SSH_PUB" >> /root/.ssh/authorized_keys
+                                    sudo echo "SWARM_MANAGER    pregistry" >> /etc/hosts
+                                    sudo mkdir -p "/etc/docker/certs.d/pregistry:5000"
+                                    sudo cp /certs/registry.crt "/etc/docker/certs.d/pregistry:5000"
+                                params:
+                                    OPSADMIN_SSH_PUB: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC7RjaVI5y8B2dM125CDuRqVPymMrrYhy95MwoytiAfG7TWH/izI4wyQrzy2LuKYS33YN07JgW5tm++inBurvlHVIophEPK4MSrZhZtPh+Ull+3ZPCit2R1csSilyVcaUKw4fqYBaVC7w4Ct5NnYv2bCqqm8sqTi+BKtRsoUdqPkx77PzKoQF4Ii0EGLSpBkNr05jgpRSK9cQC56VC5WCqItY+LE5Z2S0zpDZ3gUr0KPhUhRrFlXXcvYzCv/gvu2E5cP+VE39pd0syVogWp5fVyyLjVzQ6yvS+gXRzEROcq/ol1VUQVYyE5Q96qMLOG+kDD7FFItS/1pIKeO76C/gp5 opsadmin@stackstorm.com"
+                                    FILE_SERVER: { get_param: nfs_file_server }
+                                    SWARM_MANAGER: { get_param: docker_swarm_manager }
+                                    SWARM_TOKEN: { get_param: docker_swarm_token }
+
+    scale_up_policy:
+        type: Rackspace::AutoScale::ScalingPolicy
+        properties:
+            group: { get_resource: workers }
+            name:
+                str_replace:
+                    template: stack scale up policy
+                    params:
+                        stack: { get_param: "OS::stack_name" }
+            change: 1
+            cooldown: 600
+            type: webhook
+
+    scale_up_webhook:
+        type: Rackspace::AutoScale::WebHook
+        properties:
+            name:
+                str_replace:
+                    template: stack scale up hook
+                    params:
+                        stack: { get_param: "OS::stack_name" }
+            policy: { get_resource: scale_up_policy }
+
+    scale_down_policy:
+        type: Rackspace::AutoScale::ScalingPolicy
+        properties:
+            group: { get_resource: workers }
+            name:
+                str_replace:
+                    template: stack scale down policy
+                    params:
+                        stack: { get_param: "OS::stack_name" }
+            change: -1
+            cooldown: 600
+            type: webhook
+
+    scale_down_webhook:
+        type: Rackspace::AutoScale::WebHook
+        properties:
+            name:
+                str_replace:
+                    template: stack scale down hook
+                    params:
+                        stack: { get_param: "OS::stack_name" }
+            policy: { get_resource: scale_down_policy }
+
+outputs:
+
+    "Access Key":
+        value: { get_attr: [ access_key, private_key ] }
+        description: Access Key
+
+    "Scale Up Webhook":
+        value: { get_attr: [ scale_up_webhook, executeUrl ] }
+        description: Scale Up Webhook
+
+    "Scale Down Webhook":
+        value: { get_attr: [ scale_down_webhook, executeUrl ] }
+        description: Scale Down Webhook

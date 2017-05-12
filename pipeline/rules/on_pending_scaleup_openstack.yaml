@@ -1,0 +1,20 @@
+---
+name: on_pending_scaleup_openstack
+pack: pipeline
+description: "Scale up the Swarm when pending tasks go over threshold."
+enabled: True
+
+trigger:
+    type: pipeline.swarm_pending_tasks
+    parameters: {}
+
+criteria:
+    # Crossing threshold up
+    trigger.over_threshold:
+        type: equals
+        pattern: True
+
+action:
+    ref: pipeline.scaling
+    parameters:
+        webhook: "https://webhook_url_specific_to_the_asg_for_scale_up"
