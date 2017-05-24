@@ -1,0 +1,4 @@
+---
+base_url: "unix://var/run/docker.sock"
+swarm_pending_tasks_threshold: 1
+swarm_pending_tasks_polling_interval: 5

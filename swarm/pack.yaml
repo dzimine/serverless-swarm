@@ -1,0 +1,10 @@
+---
+name: swarm
+ref: swarm
+description: Docker Swarm integration pack
+keywords:
+  - docker
+  - automation
+version : 0.1.0
+author : Dmitri Zimin(e)
+email : dz@stackstorm.com

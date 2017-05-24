@@ -1,0 +1,37 @@
+---
+name: "job"
+runner_type: "run-python"
+description: "Run a dockerized job on swarm cluster."
+enabled: true
+entry_point: "job.py"
+parameters:
+    image:
+        type: "string"
+        description: "Docker image"
+        required: true
+    command:
+        type: "string"
+        description: "Command"
+        required: false
+    args:
+        type: "array"
+        description: "Command arguments (array of strings)"
+        required: false
+    mounts:
+        type: "array"
+        description: "List of mounts, as strings following docker service --mount syntax"
+        required: false
+    name:
+        type: "string"
+        description: "Job name prefix (default is `job`)"
+        required: false
+        default: "job"
+    reserve_cpu:
+        type: integer
+        description: CPU limit in units of 10^9 CPU shares.
+    reserve_memory:
+        type: integer
+        description: Memory limit in Bytes.
+
+    # TODO: expand to all docker service commands
+

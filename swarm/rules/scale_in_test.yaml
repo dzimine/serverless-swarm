@@ -1,0 +1,21 @@
+---
+name: scale_in_test
+pack: swarm
+description: "Test scale-in rule, fires  on swarm pending task queue count going DOWN BELOW threshold"
+enabled: True
+
+trigger:
+    type: swarm.pending_tasks
+    parameters: {}
+
+criteria:
+    # Crossing threshold down
+    trigger.over_threshold:
+        type: equals
+        pattern: False
+
+action:
+    ref: core.local
+    parameters:
+        cmd: "echo Pending queue going down: {{ trigger.count }}"
+

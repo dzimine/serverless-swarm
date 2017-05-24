@@ -1,0 +1,22 @@
+name: scale_openstack
+pack: swarm
+runner_type: python-script
+description: Trigger scaling action via webhook on autoscaling group
+enabled: true
+entry_point: scaling.py
+parameters:
+    auth_endpoint:
+        type: string
+        required: true
+        default: "{{st2kv.system.rax_auth_endpoint}}"
+    username:
+        type: string
+        required: true
+        default: "{{st2kv.system.rax_auth_username}}"
+    api_key:
+        type: string
+        required: true
+        default: "{{st2kv.system.rax_auth_apikey}}"
+    webhook:
+        type: string
+        required: true

@@ -1,0 +1,18 @@
+---
+  base_url:
+    description: "Docker API URL"
+    type: string
+    required: true
+    default: "unix://var/run/docker.sock"
+  swarm_pending_tasks_threshold:
+    description: Trigger only when pending tasks count above the threshold.
+    type: integer
+    required: false
+    default: 0
+  swarm_pending_tasks_polling_interval:
+    description: Interval for polling swarm api for tasks, seconds.
+    type: integer
+    required: true
+    default: 5
+
+
