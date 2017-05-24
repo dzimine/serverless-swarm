@@ -11,7 +11,7 @@ To run the pack's unit tests:
 # Activate existing pack's virtual environmet
 source /opt/stackstorm/virtualenvs/pipeline/bin/activate
 # Run the tests first time - it will install test dependencies
-t2-run-pack-tests -x /opt/stackstorm/pipeline
+st2-run-pack-tests -x /opt/stackstorm/pipeline
 # Skip installing dependencies on subsequent runs
-t2-run-pack-tests -x -j /opt/stackstorm/pipeline
+st2-run-pack-tests -x -j /opt/stackstorm/pipeline
 ```
