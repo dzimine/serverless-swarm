@@ -1,0 +1,7 @@
+---
+name: "pending_queue"
+runner_type: "run-python"
+description: "Returns count of pending Swarm tasks."
+enabled: true
+entry_point: "pending_queue.py"
+parameters: {}
