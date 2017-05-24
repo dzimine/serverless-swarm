@@ -2,6 +2,7 @@
 
 A toy map-reduce app that counts words occurence in a file.
 Consists of `split.py`, `map.py`, and `reduce.py`.
+Runs in containers, as Docker Swarm jobs. Orchestrated by StackStorm workflow [`wordcount.yaml`](../../pipeline/actions/workflows/wordcount.yaml)
 
 
 ### Usage
