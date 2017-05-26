@@ -1,5 +1,6 @@
 ---
 name: "job"
+pack: "swarm"
 runner_type: "run-python"
 description: "Run a dockerized job on swarm cluster."
 enabled: true

@@ -9,7 +9,7 @@ class PendingQueueAction(Action):
         self.client = docker.DockerClient(
             self.config.get('base_url', 'unix://var/run/docker.sock'))
 
-    def run(self, auth_endpoint, username, api_key, webhook):
+    def run(self):
         try:
 
             tasks = self.client.api.tasks(filters={'desired-state': 'running'})

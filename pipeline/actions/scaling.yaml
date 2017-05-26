@@ -1,5 +1,5 @@
 name: scaling
-pack: sandbox
+pack: pipeline
 runner_type: python-script
 description: Trigger scaling action via webhook on autoscaling group
 enabled: true

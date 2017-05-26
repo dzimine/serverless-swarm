@@ -4,6 +4,7 @@ description: "Swarm pending queue sensor"
 trigger_types:
   -
     name: pending_tasks
+    description: "Swarm pending tasks count cross over/under threshold"
     payload_schema:
       type: object
       properties:
