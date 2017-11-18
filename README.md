@@ -19,8 +19,7 @@ are welcome to explore it's orchestration and wiring.
 
 The solution is under active development; your constructive criticism and
 contributions are welcome:  [@dzimine](https://twitter.com/dzimine) on
-Twitter, or as [Github issues](https://github.com/dzimine/serverless-
-swarm/issues).
+Twitter, or as [Github issues](https://github.com/dzimine/serverless-swarm/issues).
 
 
 # Deploying Serverless Swarm, from 0 to 5.
