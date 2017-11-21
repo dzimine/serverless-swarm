@@ -89,6 +89,7 @@ pipeline.findgenesb:
           - "2"
         mounts: <% $.mounts %>
         name: blast
+        timeout: 14400 # 4 hours
       on-success:
         - combine_blast_results
 
